@@ -1,0 +1,33 @@
+// TOP-LEVEL BUILD.GRADLE
+
+buildscript {
+    ext.kotlin_version = '1.9.10' // ✅ Compatible with AGP 8.1.1
+
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.1' // ✅ AGP version
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" // ✅ Kotlin plugin
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = "../build"
+
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+    // project.evaluationDependsOn(":app")
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

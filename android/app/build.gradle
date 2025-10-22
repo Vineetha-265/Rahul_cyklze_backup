@@ -1,0 +1,58 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "com.octoleee.cyklze.cyklze"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+  defaultConfig {
+        applicationId "com.octoleee.cyklze.cyklze"
+        minSdkVersion flutter.minSdkVersion // ✅ REQUIRED for modern NDK
+        targetSdkVersion 35
+        versionCode 10
+        versionName "2.1.2"
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+
+   // ✅ Load signing config from key.properties
+    def keyProperties = new Properties()
+    def keyPropertiesFile = rootProject.file("key.properties")
+    if (keyPropertiesFile.exists()) {
+        keyProperties.load(new FileInputStream(keyPropertiesFile))
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(keyProperties["storeFile"])
+            storePassword keyProperties["storePassword"]
+            keyAlias keyProperties["keyAlias"]
+            keyPassword keyProperties["keyPassword"]
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+  
+}
+
+flutter {
+    source = "../.."
+}

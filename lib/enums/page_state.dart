@@ -1,0 +1,1 @@
+enum Pagestate { loading, loggedIn, notLogged, offline, error }
