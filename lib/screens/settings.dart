@@ -11,26 +11,25 @@ class SettingsPage extends StatelessWidget {
 
   void _onTileTapped(BuildContext context, String label) async {
     if (label == 'Terms of Service') {
-           Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => const WebViewPage(
-      url: 'https://www.cyklze.com/Terms_of_Service.html',bartitle: "Terms of Service",
-    ),
-  ),
-);
-  
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const WebViewPage(
+            url: 'https://www.cyklze.com/Terms_of_Service.html',
+            bartitle: "Terms of Service",
+          ),
+        ),
+      );
     } else if (label == 'Privacy Policy') {
-    
-     Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => const WebViewPage(
-      url: 'https://www.cyklze.com/Privacy_policy.html',bartitle: "Privacy Policy",
-    ),
-  ),
-);
-
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const WebViewPage(
+            url: 'https://www.cyklze.com/Privacy_policy.html',
+            bartitle: "Privacy Policy",
+          ),
+        ),
+      );
     } else if (label == 'FAQs') {
       Navigator.push(
         context,
@@ -39,21 +38,24 @@ class SettingsPage extends StatelessWidget {
     }
   }
 
-void _launchURL(BuildContext context, String url) async {
-  final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) {
-    final success = await launchUrl(uri, mode: LaunchMode.platformDefault,);
-    if (!success) {
+  void _launchURL(BuildContext context, String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      final success = await launchUrl(
+        uri,
+        mode: LaunchMode.platformDefault,
+      );
+      if (!success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to launch URL')),
+        );
+      }
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to launch URL')),
+        const SnackBar(content: Text('Could not launch URL')),
       );
     }
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Could not launch URL')),
-    );
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -69,21 +71,25 @@ void _launchURL(BuildContext context, String url) async {
           ),
         ),
         title: const Text("Settings",
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w800)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         elevation: 0,
       ),
-  backgroundColor: Colors.grey[100],
-
+      backgroundColor: Colors.grey[100],
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          _buildSettingsTile(context, icon: Icons.description_outlined, label: 'Terms of Service'),
+          _buildSettingsTile(context,
+              icon: Icons.description_outlined, label: 'Terms of Service'),
           const SizedBox(height: 12),
-          _buildSettingsTile(context, icon: Icons.privacy_tip_outlined, label: 'Privacy Policy'),
+          _buildSettingsTile(context,
+              icon: Icons.privacy_tip_outlined, label: 'Privacy Policy'),
           const SizedBox(height: 12),
           _buildSettingsTile(context, icon: Icons.help_outline, label: 'FAQs'),
         ],
@@ -91,7 +97,8 @@ void _launchURL(BuildContext context, String url) async {
     );
   }
 
-  Widget _buildSettingsTile(BuildContext context, {required IconData icon, required String label}) {
+  Widget _buildSettingsTile(BuildContext context,
+      {required IconData icon, required String label}) {
     return InkWell(
       onTap: () => _onTileTapped(context, label),
       borderRadius: BorderRadius.circular(12),
@@ -121,7 +128,8 @@ void _launchURL(BuildContext context, String url) async {
                 ),
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
+            const Icon(Icons.arrow_forward_ios_rounded,
+                size: 16, color: Colors.grey),
           ],
         ),
       ),
