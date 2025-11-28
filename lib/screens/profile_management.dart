@@ -124,6 +124,11 @@ Future<void> _checkTokenExpiration() async {
     setState(() => _state = Pagestate.notLogged);
     return;
   }
+final   provider = Provider.of<PickupProvider>(context, listen: false);
+  if (!await provider.hasInternetConnection()) {
+    setState(() => _state = Pagestate.offline);
+    return;
+  }
 
   final connectivityResult = await Connectivity().checkConnectivity();
   if (connectivityResult == ConnectivityResult.none) {

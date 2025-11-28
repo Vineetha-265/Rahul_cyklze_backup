@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:cyklze/Provider/pickup_provider.dart';
 import 'package:cyklze/SecureStorage/securestorage.dart';
 import 'package:cyklze/Views/error.dart';
 import 'package:cyklze/Views/loginrequird.dart';
 import 'package:cyklze/screens/webpageview.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cyklze/enums/page_state.dart';
 import 'package:cyklze/Views/offline.dart';
@@ -18,6 +20,7 @@ import '../widgets/otp_fields.dart';
 const String kEndpoint =
     "https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/handleotp";
 
+
 class PhoneVerificationPage extends StatefulWidget {
   const PhoneVerificationPage({super.key});
 
@@ -27,8 +30,10 @@ class PhoneVerificationPage extends StatefulWidget {
 
 class _PhoneVerificationPageState extends State<PhoneVerificationPage>
     with SingleTickerProviderStateMixin {
+
   final TextEditingController phoneController = TextEditingController();
-  final TextEditingController otpControllers = TextEditingController();
+  final TextEditingController otpControllers =
+       TextEditingController();
 
   final List<FocusNode> otpFocusNodes = List.generate(6, (_) => FocusNode());
 
@@ -49,32 +54,31 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
   void initState() {
     super.initState();
 
-    _animController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 300));
+    _animController =
+        AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOut),
     );
 
-    _initConnectivity();
+    // _initConnectivity();
+
+    // _connSub = Connectivity().onConnectivityChanged.listen((results) {
+    //   final hasNet = results.isNotEmpty && results.first != ConnectivityResult.none;
+    //   if (!mounted) return;
+    //   setState(() {
+    //     _state = hasNet ? Pagestate.loggedIn : Pagestate.offline;
+    //   });
+    // });
   }
 
   Future<void> _initConnectivity() async {
-    // Check initial connectivity
-    final result = await Connectivity().checkConnectivity();
-    final hasNet = !result.contains(ConnectivityResult.none);
-    if (!mounted) return;
-    setState(() {
-      _state = hasNet ? Pagestate.loggedIn : Pagestate.offline;
-    });
-
-    // Listen to connectivity changes
-    _connSub = Connectivity().onConnectivityChanged.listen((result) {
-      final hasNet = !result.contains(ConnectivityResult.none);
+  //  _connSub = Connectivity().onConnectivityChanged.listen((results) {
+  //     final hasNet = results.isNotEmpty && results.first != ConnectivityResult.none;
       if (!mounted) return;
       setState(() {
-        _state = hasNet ? Pagestate.loggedIn : Pagestate.offline;
+        _state =  Pagestate.loggedIn;
       });
-    });
+    // });
   }
 
   @override
@@ -83,9 +87,9 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
     _animController.dispose();
     _connSub?.cancel();
     phoneController.dispose();
-
-    otpControllers.dispose();
-
+   
+      otpControllers.dispose();
+  
     for (var f in otpFocusNodes) {
       f.dispose();
     }
@@ -93,15 +97,15 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
   }
 
   Future<void> sendOtp() async {
-    if (!await _hasConnection()) {
-      setState(() => _state = Pagestate.offline);
-      return;
-    }
+   final   provider = Provider.of<PickupProvider>(context, listen: false);
+  if (!await provider.hasInternetConnection()) {
+    setState(() => _state = Pagestate.offline);
+    return;
+  }
 
     final phone = phoneController.text.trim();
     if (!RegExp(r'^[0-9]{10}$').hasMatch(phone)) {
-      setState(
-          () => errorMessage = "Please enter a valid 10-digit phone number.");
+      setState(() => errorMessage = "Please enter a valid 10-digit phone number.");
       return;
     }
 
@@ -125,8 +129,7 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
           if (otpFocusNodes.isNotEmpty) otpFocusNodes[0].requestFocus();
         });
       } else {
-        setState(() => errorMessage =
-            "Failed to send OTP. Please check the number and Try again.");
+        setState(() => errorMessage = "Failed to send OTP. Please check the number and Try again.");
       }
     } catch (e) {
       setState(() => errorMessage = "Network error while sending OTP.");
@@ -136,10 +139,11 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
   }
 
   Future<void> verifyOtp() async {
-    if (!await _hasConnection()) {
-      setState(() => _state = Pagestate.offline);
-      return;
-    }
+final   provider = Provider.of<PickupProvider>(context, listen: false);
+  if (!await provider.hasInternetConnection()) {
+    setState(() => _state = Pagestate.offline);
+    return;
+  }
 
     final phone = phoneController.text.trim();
     final otp = otpControllers.text.trim();
@@ -163,6 +167,7 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
         Uri.parse(kEndpoint),
         headers: {
           "Content-Type": "application/json",
+          
         },
         body: jsonEncode({"phoneNumber": phone, "otp": otp}),
       );
@@ -203,11 +208,11 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
       if (remainingSeconds <= 0) {
         timer.cancel();
         setState(() {
-          otpSent = false;
-          isSending = false;
-          isVerifying = false;
-          errorMessage = "";
-          remainingSeconds = 0;
+             otpSent = false;
+   isSending = false;
+   isVerifying = false;
+   errorMessage = "";
+   remainingSeconds = 0;
         });
       } else {
         setState(() => remainingSeconds--);
@@ -217,6 +222,7 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
 
   Widget _buildByState() {
     switch (_state) {
+
       case Pagestate.notLogged:
         return LoginRequired(
           message: "Please log in to see your profile",
@@ -230,7 +236,7 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
         );
       case Pagestate.offline:
         return OfflineRetry(onRetry: _initConnectivity);
-      case Pagestate.loading:
+          case Pagestate.loading:
         return const Center(child: CircularProgressIndicator());
       case Pagestate.error:
         return ErrorRetry(
@@ -253,38 +259,42 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
       body: _buildByState(),
     );
   }
+  
+Widget _mainContent() {
+  final size = MediaQuery.of(context).size;
 
-  Widget _mainContent() {
-    final size = MediaQuery.of(context).size;
-
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          Navigator.pop(context, false);
-        }
-      },
-      child: SafeArea(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1000),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+  return PopScope(
+    canPop: false, 
+    onPopInvokedWithResult: (didPop, result) {
+      if (!didPop) {
+       
+        Navigator.pop(context, false);
+      }
+    },
+    child: SafeArea(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 1000),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        child: Expanded(
           child: SingleChildScrollView(
             child: Column(
               children: [
-                //_TopBar(),
-                const SizedBox(height: 14),
+                   //_TopBar(),
+                            const SizedBox(height: 14),
                 _buildLeftCard(size, false),
                 const SizedBox(height: 14),
                 _buildRightCard(size, false),
-                const SizedBox(height: 12),
-                const TermsText(),
+                  const SizedBox(height: 12),
+                 const TermsText(),
+                        
               ],
             ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildLeftCard(Size size, bool isLarge) {
     double illustrationHeight = size.height * 0.18;
@@ -299,12 +309,11 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+       
           Text(
             otpSent ? "Enter the OTP" : "Verify your phone",
             style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87),
+                fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87),
           ),
           const SizedBox(height: 8),
           Text(
@@ -313,6 +322,8 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
                 : "We'll send a one-time code to verify your account.",
             style: TextStyle(fontSize: 15, color: Colors.grey[700]),
           ),
+
+       
         ],
       ),
     );
@@ -333,11 +344,11 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
           if (errorMessage.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Text(errorMessage,
-                  style: const TextStyle(color: Colors.redAccent)),
+              child:
+                  Text(errorMessage, style: const TextStyle(color: Colors.redAccent)),
             ),
           if (otpSent) ...[
-            const Text("Enter Otp", style: TextStyle(color: Colors.black)),
+              const Text("Enter Otp", style: TextStyle(color: Colors.black )),
             const SizedBox(height: 6),
             SingleOtpField(
               controller: otpControllers,
@@ -348,9 +359,8 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: remainingSeconds == 0 && !isSending
-                    ? () => sendOtp()
-                    : null,
+                onPressed:
+                    remainingSeconds == 0 && !isSending ? () => sendOtp() : null,
                 child: Text(
                   remainingSeconds == 0
                       ? "Resend OTP"
@@ -401,15 +411,14 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
                       )
                     : Text(
                         !otpSent ? "Send OTP" : "Verify OTP",
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700),
+                        style: const TextStyle(color: Colors.white,
+                            fontSize: 16, fontWeight: FontWeight.w700),
                       ),
               ),
             ),
           ),
           const SizedBox(height: 12),
+         
         ],
       ),
     );
@@ -433,6 +442,7 @@ class _TopBar extends StatelessWidget {
         const Text("CYKLZE",
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         const Spacer(),
+       
       ],
     );
   }
@@ -449,10 +459,10 @@ class GlassCard extends StatelessWidget {
       padding: padding ?? const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(colors: [
-          Colors.white.withOpacity(0.95),
-          Colors.white.withOpacity(0.85)
-        ], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        gradient: LinearGradient(
+            colors: [Colors.white.withOpacity(0.95), Colors.white.withOpacity(0.85)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
         boxShadow: [
           BoxShadow(
               color: Colors.black.withOpacity(0.06),
@@ -464,6 +474,7 @@ class GlassCard extends StatelessWidget {
     );
   }
 }
+
 
 class _PhoneInputRow extends StatelessWidget {
   final TextEditingController controller;
@@ -534,15 +545,14 @@ class TermsText extends StatelessWidget {
             ),
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const WebViewPage(
-                      url: 'https://www.cyklze.com/Terms_of_Service.html',
-                      bartitle: "Terms of Service",
-                    ),
-                  ),
-                );
+                 Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => const WebViewPage(
+      url: 'https://www.cyklze.com/Terms_of_Service.html',bartitle: "Terms of Service",
+    ),
+  ),
+);
               },
           ),
           const TextSpan(text: ' and '),
@@ -555,14 +565,13 @@ class TermsText extends StatelessWidget {
             recognizer: TapGestureRecognizer()
               ..onTap = () {
                 Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const WebViewPage(
-                      url: 'https://www.cyklze.com/Privacy_policy.html',
-                      bartitle: "Privacy Policy",
-                    ),
-                  ),
-                );
+  context,
+  MaterialPageRoute(
+    builder: (_) => const WebViewPage(
+      url: 'https://www.cyklze.com/Privacy_policy.html',bartitle: "Privacy Policy",
+    ),
+  ),
+);
               },
           ),
           const TextSpan(text: '.'),

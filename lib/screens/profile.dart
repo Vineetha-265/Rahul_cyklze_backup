@@ -53,6 +53,12 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
 Future<void> fetchProfile() async {
+  final   provider = Provider.of<PickupProvider>(context, listen: false);
+  if (!await provider.hasInternetConnection()) {
+    setState(() => _state = Pagestate.offline);
+    return;
+  }
+
   if (mounted) {
   setState(() => _state = Pagestate.loading);
   }
@@ -99,6 +105,12 @@ Future<void> fetchProfile() async {
 
 
   Future<void> logOut() async {
+    final   provider = Provider.of<PickupProvider>(context, listen: false);
+  if (!await provider.hasInternetConnection()) {
+    setState(() => _state = Pagestate.offline);
+    return;
+  }
+
     final connected = await _hasConnection();
     if (!connected) {
       if (!mounted) return;
@@ -434,20 +446,20 @@ Widget _buildMenuButton({
   bool isLogout = false,
 }) {
   return Padding(
-    padding: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.only(bottom: 10), // slightly larger gap
     child: InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // more padding
         decoration: BoxDecoration(
           color: isLogout ? Colors.red.shade50 : Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -455,18 +467,17 @@ Widget _buildMenuButton({
           children: [
             Icon(
               icon,
-              size: 24,
+              size: 22, // slightly bigger
               color: isLogout ? Colors.red : const Color(0xFF1D4D61),
             ),
-            const SizedBox(width: 14),
-
+            const SizedBox(width: 12), // slightly more spacing
             Expanded(
               child: Semantics(
-                label: 'Menu Item: $title', 
+                label: 'Menu Item: $title',
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15, // slightly bigger font
                     fontWeight: FontWeight.w600,
                     color: isLogout ? Colors.red : Colors.black87,
                   ),
@@ -475,6 +486,7 @@ Widget _buildMenuButton({
             ),
             Icon(
               Icons.chevron_right,
+              size: 20,
               color: isLogout ? Colors.red : Colors.grey,
             ),
           ],

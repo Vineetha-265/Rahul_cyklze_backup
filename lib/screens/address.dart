@@ -8,10 +8,12 @@ import 'package:cyklze/Views/loginrequird.dart';
 import 'package:cyklze/Views/offline.dart';
 import 'package:cyklze/screens/confirm_pickup.dart';
 import 'package:cyklze/screens/verification.dart';
+import 'package:cyklze/widgets/time_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:cyklze/enums/page_state.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 const String _tokenUrl =
@@ -62,6 +64,135 @@ final int _runCount = 0;
     _postalController.dispose();
     super.dispose();
   }
+
+  String? selectedDate;
+  bool isTomorrow = false; 
+  String? selectedTimeRange;
+  Widget _buildSectionTitle(String title, {String? subtitle}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 16,
+                        fontWeight: FontWeight.w800, color: Colors.black)),
+          if (subtitle != null) ...[
+          
+            Text(subtitle,
+                  style: TextStyle(
+    color: Colors.grey[600],      
+    fontWeight: FontWeight.w400,   
+    height: 1.3,                   
+  )),
+          ],
+        ],
+      ),
+    );
+  }
+
+Future<void> _pickDate() async {
+  final now = DateTime.now();
+
+  // Determine if the current time is after 2 PM
+  final isAfter2PM = now.hour >= 14;
+
+  // Define today and tomorrow
+  final today = DateTime(now.year, now.month, now.day);
+  final tomorrow = today.add(const Duration(days: 1));
+
+  // If after 2 PM, only allow tomorrow and onward; otherwise, today and onward
+  final firstDate = isAfter2PM ? tomorrow : today;
+
+  // Set a maximum date (e.g., 7 days from tomorrow)
+  final maxDate = tomorrow;
+
+  final picked = await showDatePicker(
+    context: context,
+    firstDate: firstDate,
+    lastDate: maxDate,
+    initialDate: firstDate,
+    builder: (context, child) {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Color(0xFF1D4D61),
+            onPrimary: Colors.white,
+            onSurface: Colors.black,
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: Color(0xFF1D4D61),
+            ),
+          ),
+        ),
+        child: child!,
+      );
+    },
+  );
+
+  if (picked != null) {
+    final dateOnly = DateTime(picked.year, picked.month, picked.day);
+    final formatted = DateFormat('dd MMM yyyy').format(dateOnly);
+final now = DateTime.now();
+final today = DateTime(now.year, now.month, now.day);
+    setState(() {
+      selectedDate = formatted;
+
+      if(picked.isAfter(today)){
+ isTomorrow = true;
+      }else{
+        isTomorrow = false;
+      }
+    });
+  }
+}
+
+
+
+// Future<void> _pickDate() async {
+//   final now = DateTime.now();
+//   final tomorrow = DateTime(now.year, now.month, now.day + 1);
+//     final maxDate = tomorrow.add(const Duration(days: 7));
+
+//   final picked = await showDatePicker(
+//     context: context,
+//     firstDate: tomorrow,
+//     lastDate: tomorrow.add(const Duration(days: 7)),
+//     initialDate: tomorrow,
+//     builder: (context, child) {
+//       return Theme(
+//         data: Theme.of(context).copyWith(
+//           colorScheme: const ColorScheme.light(
+//             primary: Color(0xFF1D4D61),
+//             onPrimary: Colors.white,
+//             onSurface: Colors.black,
+//           ),
+//           textButtonTheme: TextButtonThemeData(
+//             style: TextButton.styleFrom(
+//               foregroundColor: const Color(0xFF1D4D61),
+//             ),
+//           ),
+//         ),
+//         child: child!,
+//       );
+//     },
+//   );
+
+//   if (picked != null) {
+//     final dateOnly = DateTime(picked.year, picked.month, picked.day);
+//     final formatted = DateFormat('dd MMM yyyy').format(dateOnly);
+
+//     setState(() {
+//       selectedDate = formatted;
+//     });
+//   }
+// }
+
+
+
+
 
   Future<void> _loadSavedAddress() async {
     final a = await SecureStorage.getAddress();
@@ -216,6 +347,7 @@ Navigator.of(context).push(
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
     appBar: 
     
@@ -285,308 +417,722 @@ Navigator.of(context).push(
     }
   }
 
+
+
+
+Future<void> showPickupDetailsPopup({
+  required BuildContext context,
+  required String selectedType,
+  required String selectedDate,
+  required String selectedTimeRange,
+  required List<String> selectedItems,
+}) async {
+  return showDialog(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Semantics(
+          label: 'Pickup details card',
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Semantics(
+                      header: true,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today_outlined, size: 18, color: Colors.black54),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Pickup details',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          // const Spacer(),
+                          // Tooltip(
+                          //   message: 'Edit pickup details',
+                          //   child: TextButton.icon(
+                          //     onPressed: () => Navigator.pop(context),
+                          //     icon: const Icon(Icons.edit, size: 18, color: Colors.white),
+                          //     label: const Text('Edit', style: TextStyle(color: Colors.white)),
+                          //     style: TextButton.styleFrom(
+                          //       backgroundColor: const Color(0xFF1D4D61),
+                          //       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          //     ),
+                          //   ),
+                          // ),
+                    
+                    ],
+                      ),
+                    ),
+                    const Divider(height: 14),
+              
+                    // Pickup Type
+                    Semantics(
+                      label: 'Pickup type details',
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          children: [
+                            const SizedBox(
+                                width: 100,
+                                child: Text('Type', style: TextStyle(color: Colors.black54))),
+                            Expanded(
+                                child: Text(selectedType.isNotEmpty ? selectedType : '—')),
+                          ],
+                        ),
+                      ),
+                    ),
+              
+                    // Pickup Date
+                    Semantics(
+                      label: 'Pickup date details',
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          children: [
+                            const SizedBox(
+                                width: 100,
+                                child: Text('Date', style: TextStyle(color: Colors.black54))),
+                            Expanded(
+                                child: Text(selectedDate.isNotEmpty ? selectedDate : '—')),
+                          ],
+                        ),
+                      ),
+                    ),
+              
+                    // Pickup Time
+                    Semantics(
+                      label: 'Pickup time range details',
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          children: [
+                            const SizedBox(
+                                width: 100,
+                                child: Text('Time', style: TextStyle(color: Colors.black54))),
+                            Expanded(
+                                child: Text(
+                                    selectedTimeRange.isNotEmpty ? selectedTimeRange : '—')),
+                          ],
+                        ),
+                      ),
+                    ),
+              
+                    const SizedBox(height: 8),
+                    const Text('Items', style: TextStyle(color: Colors.black54)),
+                    const SizedBox(height: 6),
+              
+                    // Items Chips
+                    Semantics(
+                      label: 'Items selected for pickup',
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: (selectedItems.isNotEmpty
+                                ? selectedItems
+                                : ['—'])
+                            .map((it) => Chip(
+                                  label: Text(it),
+                                  backgroundColor: Colors.grey.shade100,
+                                ))
+                            .toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
+
 Widget _mainContent() {
   return SingleChildScrollView(
-    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 16),
-        Semantics(
-          label: 'Pickup details card',
-          child: Container(
-   decoration: BoxDecoration(
-      color: Colors.white, // or any background color
-  borderRadius: BorderRadius.circular(12),
-   ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Pickup details header row theme
-                  Semantics(
-                    header: true,
-                    child: Row(
-                      children: [
-                        const Icon(Icons.calendar_today_outlined, size: 18, color: Colors.black54),
-                        const SizedBox(width: 8),
-                        const Text('Pickup details', style: TextStyle(fontWeight: FontWeight.w700)),
-                        const Spacer(),
-                      Tooltip(
-              message: 'Edit pickup details',
-              child: TextButton.icon(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.edit, size: 18, color: Colors.white),
-                label: const Text('Edit', style: TextStyle(color: Colors.white)),
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFF1D4D61),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        // === Pickup Details Button ===
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.local_shipping_outlined, color: Colors.white, size: 18),
+            label: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                'Show Pickup Details',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
               ),
             ),
-            
-            
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 14),
-                  Semantics(
-                    label: 'Pickup type details',
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 100, child: Text('Type', style: TextStyle(color: Colors.black54))),
-                          Expanded(child: Text(widget.selectedType.isNotEmpty ? widget.selectedType : '—')),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Semantics(
-                    label: 'Pickup date details',
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 100, child: Text('Date', style: TextStyle(color: Colors.black54))),
-                          Expanded(child: Text(widget.selectedDate.isNotEmpty ? widget.selectedDate : '—')),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Semantics(
-                    label: 'Pickup time range details',
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 100, child: Text('Time', style: TextStyle(color: Colors.black54))),
-                          Expanded(child: Text(widget.selectedTimeRange.isNotEmpty ? widget.selectedTimeRange : '—')),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text('Items', style: TextStyle(color: Colors.black54)),
-                  const SizedBox(height: 6),
-                  Semantics(
-                    label: 'Items selected for pickup',
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 6,
-                      children: (widget.selectedItems.isNotEmpty ? widget.selectedItems : ['—']).map((it) {
-                        return Chip(label: Text(it), backgroundColor: Colors.grey.shade100);
-                      }).toList(),
-                    ),
-                  ),
-                ],
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1D4D61),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
+              elevation: 2,
+              shadowColor: Colors.black.withOpacity(0.2),
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
             ),
+            onPressed: () {
+              showPickupDetailsPopup(
+                context: context,
+                selectedType: widget.selectedType,
+                selectedDate: widget.selectedDate,
+                selectedTimeRange: widget.selectedTimeRange,
+                selectedItems: widget.selectedItems,
+              );
+            },
           ),
         ),
-         const SizedBox(height: 10),
-          if (_savedAddress != null) ...[
- Semantics(
-            label: 'Choose or Enter Your Pickup Address',
-            child:const Text('Choose or Enter Your Pickup Address', style: TextStyle(fontWeight: FontWeight.w600)),
-          )]else ...[
-         Semantics(
-            label: 'Enter Your Pickup Address',
-            child:const Text('Enter Your Pickup Address', style: TextStyle(fontWeight: FontWeight.w600)),
-          )
-        ],
-       
-        if (_savedAddress != null) ...[
-         
-          Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-            children: [const SizedBox(height: 7),
-               Semantics(
-            label: 'Saved address section',
-            child: const Text('Saved Address', style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          const SizedBox(height: 2),
+
+        const SizedBox(height: 10),
+
+        // === Address Title Section ===
+        if (_savedAddress != null)
           Semantics(
-            label: 'Continue with saved address text',
-            child: Text(
-              'Continue with the saved address',
-              style: TextStyle(
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w400,
-                    height: 1.3,
-                  ),
+            label: 'Choose or Enter Your Pickup Address',
+            child: _buildSectionTitle('Choose or Enter Your Pickup Address'),
+          )
+        else
+          const Text(
+            'Enter Your Pickup Address',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
+          ),
+
+        if (_savedAddress != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            'Continue with the saved address',
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 12.5,
+              height: 1.2,
             ),
           ),
-              InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: _useSavedAddress,
-                child: Semantics(
-                  label: 'Tap to use saved address',
-                  child: Card(
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.home, color: Colors.green),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              _savedAddress!,
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                            ),
-                          ),
-                          const Icon(Icons.chevron_right, color: Colors.grey),
-                        ],
+          const SizedBox(height: 6),
+          InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: _useSavedAddress,
+            child: Card(
+              margin: EdgeInsets.zero,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(color: Colors.grey.shade300, width: 0.8),
+              ),
+              elevation: 1,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: Row(
+                  children: [
+                    const Icon(Icons.home, color: Colors.green, size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _savedAddress!,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
-                  ),
+                    const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ],
 
+        const SizedBox(height: 10),
+
+        // === Enter New Address Section ===
+        _buildSectionTitle('Enter New Address'),
+        Text(
+          'Enter a new address for the current pickup',
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w400,
+            fontSize: 12.5,
+            height: 1.2,
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // === Address Fields ===
+        _field(_streetController, label: 'Street / Plot no.', icon: Icons.location_on),
+        const SizedBox(height: 6),
+        _field(_areaController, label: 'Colony / Area', icon: Icons.apartment),
         const SizedBox(height: 6),
 
-        Semantics(
-          label: 'Enter new address section',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-             const Text('Enter New Address', style: TextStyle(fontWeight: FontWeight.w600)),
-              Semantics(
-                label: 'Enter new address details text',
-                child: Text(
-                  'Enter a new address for the current pickup',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w400,
-                    height: 1.3,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
-        ),
-
-        _field(_streetController, label: 'Street / Plot no.', icon: Icons.location_on),
-        _field(_areaController, label: 'Colony / Area', icon: Icons.apartment),
+        // === Postal & Verify Row ===
         Row(
           children: [
             Expanded(
               flex: 3,
-              child: _field(_postalController, label: 'Postal Code', icon: Icons.markunread_mailbox, keyboard: TextInputType.number),
+              child: _field(
+                _postalController,
+                label: 'Postal Code',
+                icon: Icons.markunread_mailbox,
+                keyboard: TextInputType.number,
+              ),
             ),
-            const SizedBox(width: 12),
-          Expanded(
-  flex: 2,
-  child: SizedBox(
-    height: 58,
-    child: Semantics(
-      label: 'Verify postal code button',
-      child: ElevatedButton(
-        onPressed: _verifyingPostal ? null : _verifyPostal,
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          backgroundColor: const Color(0xFF1D4D61), // Set the button color
-          textStyle: const TextStyle(color: Colors.white), // Set the text color to white
-        ),
-        child: _verifyingPostal
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
-            : const Text('Verify Postal code',style: TextStyle(color: Colors.white),),
-      ),
-    ),
-  ),
-)
-
-          ],
-        ),
-const Text("select city"),
-     
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey), 
-            ),
-            child: DropdownButtonHideUnderline(
-              child: Semantics(
-                label: 'City selection dropdown',
-                child: DropdownButton<String>(
-                  value: _selectedCity,
-                  isExpanded: true,
-                  icon: const Icon(Icons.arrow_drop_down),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'Hyderabad',
-                      child: Text('Hyderabad'),
+            const SizedBox(width: 8),
+            Expanded(
+              flex: 2,
+              child: SizedBox(
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _verifyingPostal ? null : _verifyPostal,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1D4D61),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCity = value!;
-                    });
-                  },
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                  ),
+                  child: _verifyingPostal
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Text(
+                          'Verify',
+                          style: TextStyle(fontSize: 13, color: Colors.white),
+                        ),
                 ),
               ),
             ),
+          ],
+        ),
+
+        const SizedBox(height: 10),
+
+        // === City Dropdown ===
+        const Text(
+          'Select City',
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade400, width: 0.8),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedCity,
+              isExpanded: true,
+              icon: const Icon(Icons.arrow_drop_down),
+              style: const TextStyle(fontSize: 13, color: Colors.black87),
+              items: const [
+                DropdownMenuItem(
+                  value: 'Hyderabad',
+                  child: Text('Hyderabad'),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _selectedCity = value!;
+                });
+              },
+            ),
           ),
         ),
+
         if (_postalCheckResult != null) ...[
           const SizedBox(height: 8),
-          Semantics(
-            label: 'Postal check result',
-            child: Row(
-              children: [
-                Icon(_postalCheckResult!.contains('Not Serviceable') ? Icons.close : Icons.check_circle,
-                    color: _postalCheckResult!.contains('Not Serviceable') ? Colors.red : Colors.green),
-                const SizedBox(width: 8),
-                Expanded(child: Text(_postalCheckResult!)),
-              ],
-            ),
+          Row(
+            children: [
+              Icon(
+                _postalCheckResult!.contains('Not Serviceable')
+                    ? Icons.close
+                    : Icons.check_circle,
+                color: _postalCheckResult!.contains('Not Serviceable')
+                    ? Colors.red
+                    : Colors.green,
+                size: 16,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  _postalCheckResult!,
+                  style: const TextStyle(fontSize: 12.5),
+                ),
+              ),
+            ],
           ),
         ],
 
-        const SizedBox(height: 22),
+        const SizedBox(height: 16),
 
-        Semantics(
-          label: 'Submit address button',
-          child: SizedBox(
-            width: double.infinity,
-            child: InkWell(
-              onTap: _submitAddress,
-              borderRadius: BorderRadius.circular(14),
-              child: Ink(
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient( colors: [Color(0xFF1D4D61), Color(0xFF163B4B)]),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 12, offset: const Offset(0, 6))],
+        // === Confirm Address Button ===
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: InkWell(
+            onTap: _submitAddress,
+            borderRadius: BorderRadius.circular(10),
+            child: Ink(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1D4D61), Color(0xFF163B4B)],
                 ),
-                child: const Center(
-                  child: Text('Confirm Address', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: Text(
+                  'Confirm Address',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ),
           ),
         ),
-        const SizedBox(height: 45),
 
+        const SizedBox(height: 28),
       ],
     ),
+  );
+}
+
+
+
+
+
+// Widget _mainContent() {
+
+//   return SingleChildScrollView(
+//     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+//     child: Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         const SizedBox(height: 5),
+//        SizedBox(
+//   width: double.infinity, // full width of parent
+//   child: ElevatedButton.icon(
+//     icon: const Icon(Icons.local_shipping_outlined, color: Colors.white),
+//     label: const Padding(
+//       padding: EdgeInsets.symmetric(vertical: 14),
+//       child: Text(
+//         'Show Pickup Details',
+//         style: TextStyle(
+//           fontSize: 16,
+//           fontWeight: FontWeight.w600,
+//           color: Colors.white,
+//         ),
+//       ),
+//     ),
+//     style: ElevatedButton.styleFrom(
+//       backgroundColor: const Color(0xFF1D4D61), // deep teal-blue tone
+//       foregroundColor: Colors.white,
+//       shape: RoundedRectangleBorder(
+//         borderRadius: BorderRadius.circular(12),
+//       ),
+//       elevation: 3,
+//       shadowColor: Colors.black.withOpacity(0.2),
+//       alignment: Alignment.centerLeft, // icon stays left
+//     ),
+//     onPressed: () {
+//       showPickupDetailsPopup(
+//         context: context,
+//         selectedType: widget.selectedType,
+//         selectedDate: widget.selectedDate,
+//         selectedTimeRange: widget.selectedTimeRange,
+//         selectedItems: widget.selectedItems,
+//       );
+//     },
+//   ),
+// ),
+
+
+//          const SizedBox(height: 10),
+//           if (_savedAddress != null) ...[
+//  Semantics(
+//             label: 'Choose or Enter Your Pickup Address',
+//             child: _buildSectionTitle('Choose or Enter Your Pickup Address'),
+//           )]else ...[
+//          Semantics(
+//             label: 'Enter Your Pickup Address',
+//             child:const Text('Enter Your Pickup Address', style: TextStyle(fontWeight: FontWeight.w600)),
+//           )
+//         ],
+       
+//         if (_savedAddress != null) ...[
+         
+//           Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [const SizedBox(height: 7),
+//           //      Semantics(
+//           //   label: 'Saved address section',
+//           //   child: const Text('Saved Address', style: TextStyle(fontWeight: FontWeight.w600)),
+//           // ),
+//           const SizedBox(height: 2),
+//           Semantics(
+//             label: 'Continue with saved address text',
+//             child: Text(
+//               'Continue with the saved address',
+//               style: TextStyle(
+//                     color: Colors.grey[600],
+//                     fontWeight: FontWeight.w400,
+//                     height: 1.3,
+//                   ),
+//             ),
+//           ),
+//               InkWell(
+//                 borderRadius: BorderRadius.circular(12),
+//                 onTap: _useSavedAddress,
+//                 child: Semantics(
+//                   label: 'Tap to use saved address',
+//                   child: Card(
+//                     color: Colors.white,
+//                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+//                     child: Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+//                       child: Row(
+//                         children: [
+//                           const Icon(Icons.home, color: Colors.green),
+//                           const SizedBox(width: 16),
+//                           Expanded(
+//                             child: Text(
+//                               _savedAddress!,
+//                               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+//                             ),
+//                           ),
+//                           const Icon(Icons.chevron_right, color: Colors.grey),
+//                         ],
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ],
+
+//         const SizedBox(height: 6),
+
+//         Semantics(
+//           label: 'Enter new address section',
+//           child: Column(
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               _buildSectionTitle('Enter New Address'),
+//               Semantics(
+//                 label: 'Enter new address details text',
+//                 child: Text(
+//                   'Enter a new address for the current pickup',
+//                   style: TextStyle(
+//                     color: Colors.grey[600],
+//                     fontWeight: FontWeight.w400,
+//                     height: 1.3,
+//                   ),
+//                 ),
+//               ),
+//               const SizedBox(height: 12),
+//             ],
+//           ),
+//         ),
+
+//         _field(_streetController, label: 'Street / Plot no.', icon: Icons.location_on),
+//         _field(_areaController, label: 'Colony / Area', icon: Icons.apartment),
+//         Row(
+//           children: [
+//             Expanded(
+//               flex: 3,
+//               child: _field(_postalController, label: 'Postal Code', icon: Icons.markunread_mailbox, keyboard: TextInputType.number),
+//             ),
+//             const SizedBox(width: 12),
+//           Expanded(
+//   flex: 2,
+//   child: SizedBox(
+//     height: 58,
+//     child: Semantics(
+//       label: 'Verify postal code button',
+//       child: ElevatedButton(
+//         onPressed: _verifyingPostal ? null : _verifyPostal,
+//         style: ElevatedButton.styleFrom(
+//           shape: RoundedRectangleBorder(
+//             borderRadius: BorderRadius.circular(12),
+//           ),
+//           backgroundColor: const Color(0xFF1D4D61), // Set the button color
+//           textStyle: const TextStyle(color: Colors.white), // Set the text color to white
+//         ),
+//         child: _verifyingPostal
+//             ? const SizedBox(
+//                 width: 20,
+//                 height: 20,
+//                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+//               )
+//             : const Text('Verify Postal code',style: TextStyle(color: Colors.white),),
+//       ),
+//     ),
+//   ),
+// )
+
+//           ],
+//         ),
+// const Text("select city"),
+     
+//         Padding(
+//           padding: const EdgeInsets.only(bottom: 12),
+//           child: Container(
+//             padding: const EdgeInsets.symmetric(horizontal: 12),
+//             decoration: BoxDecoration(
+//               color: Colors.white,
+//               borderRadius: BorderRadius.circular(12),
+//               border: Border.all(color: Colors.grey), 
+//             ),
+//             child: DropdownButtonHideUnderline(
+//               child: Semantics(
+//                 label: 'City selection dropdown',
+//                 child: DropdownButton<String>(
+//                   value: _selectedCity,
+//                   isExpanded: true,
+//                   icon: const Icon(Icons.arrow_drop_down),
+//                   items: const [
+//                     DropdownMenuItem(
+//                       value: 'Hyderabad',
+//                       child: Text('Hyderabad'),
+//                     ),
+//                   ],
+//                   onChanged: (value) {
+//                     setState(() {
+//                       _selectedCity = value!;
+//                     });
+//                   },
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ),
+//         if (_postalCheckResult != null) ...[
+//           const SizedBox(height: 8),
+//           Semantics(
+//             label: 'Postal check result',
+//             child: Row(
+//               children: [
+//                 Icon(_postalCheckResult!.contains('Not Serviceable') ? Icons.close : Icons.check_circle,
+//                     color: _postalCheckResult!.contains('Not Serviceable') ? Colors.red : Colors.green),
+//                 const SizedBox(width: 8),
+//                 Expanded(child: Text(_postalCheckResult!)),
+//               ],
+//             ),
+//           ),
+//         ],
+
+//         const SizedBox(height: 22),
+
+//         Semantics(
+//           label: 'Submit address button',
+//           child: SizedBox(
+//             width: double.infinity,
+//             child: InkWell(
+//               onTap: _submitAddress,
+//               borderRadius: BorderRadius.circular(14),
+//               child: Ink(
+//                 height: 56,
+//                 decoration: BoxDecoration(
+//                   gradient: const LinearGradient( colors: [Color(0xFF1D4D61), Color(0xFF163B4B)]),
+//                   borderRadius: BorderRadius.circular(14),
+//                   boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 12, offset: const Offset(0, 6))],
+//                 ),
+//                 child: const Center(
+//                   child: Text('Confirm Address', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ),
+//         const SizedBox(height: 45),
+
+//       ],
+//     ),
+//   );
+// }
+Widget _buildPickupSlotSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const SizedBox(height: 28),
+      _buildSectionTitle("Select a Pickup slot"),
+      Text(
+        "Select your preferred time slot.",
+        style: TextStyle(
+          color: Colors.grey[600],
+          height: 1.3,
+        ),
+      ),
+      const SizedBox(height: 16),
+      Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          TimeChip(
+            label: "8 AM - 11 AM",
+            selectedTimeRange: selectedTimeRange,
+            onSelected: (value) =>
+                setState(() => selectedTimeRange = value),
+          ),
+          TimeChip(
+            label: "11 AM - 1 PM",
+            selectedTimeRange: selectedTimeRange,
+            onSelected: (value) =>
+                setState(() => selectedTimeRange = value),
+          ),
+          TimeChip(
+            label: "1 PM - 3 PM",
+            selectedTimeRange: selectedTimeRange,
+            onSelected: (value) =>
+                setState(() => selectedTimeRange = value),
+          ),
+          TimeChip(
+            label: "3 PM - 6 PM",
+            selectedTimeRange: selectedTimeRange,
+            onSelected: (value) =>
+                setState(() => selectedTimeRange = value),
+          ),
+        ],
+      ),
+    ],
   );
 }
 

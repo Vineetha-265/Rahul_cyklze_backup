@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cyklze/Provider/pickup_provider.dart';
 import 'package:cyklze/Views/error.dart';
 import 'package:cyklze/Views/loading.dart';
 import 'package:cyklze/Views/loginrequird.dart';
@@ -10,7 +11,8 @@ import 'package:cyklze/enums/page_state.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:cyklze/SecureStorage/securestorage.dart'; 
+import 'package:cyklze/SecureStorage/securestorage.dart';
+import 'package:provider/provider.dart'; 
 
 class HelpPage extends StatefulWidget {
   const HelpPage({super.key});
@@ -128,13 +130,11 @@ void confirmLogout(BuildContext context) {
       return;
     }
 
-    final connectivity = await Connectivity().checkConnectivity();
-    if (connectivity == ConnectivityResult.none) {
-      setState(() {
-              _state = Pagestate.offline;
-            });
-      return;
-    }
+final   provider = Provider.of<PickupProvider>(context, listen: false);
+  if (!await provider.hasInternetConnection()) {
+    setState(() => _state = Pagestate.offline);
+    return;
+  }
  setState(() {
               _state = Pagestate.loading;
             });
@@ -295,36 +295,38 @@ void confirmLogout(BuildContext context) {
 
 Widget _maincon() {
   return SingleChildScrollView(
-    padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.all(12), // slightly smaller padding
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-     Semantics(
+        // Info Box
+        Semantics(
           label: 'Support availability hours information',
           readOnly: true,
-          child: Container( decoration: BoxDecoration(
-      color: Colors.transparent, // or any background color
-  borderRadius: BorderRadius.circular(12),
-   ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: const Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 20,
-                horizontal: 18,
-              ),
+              padding: EdgeInsets.symmetric(vertical: 16, horizontal: 14), // tighter padding
               child: Text(
                 '📬 Feel free to drop us an email or ask for a callback anytime.\n\n'
                 '🕒 We’re around daily from 7:00 AM to 10:00 PM — got you covered!',
                 style: TextStyle(
-                      color: const Color(0xFF4A4A4A),
-                      fontWeight: FontWeight.w500,
-                      height: 1.6,
-                      fontSize: 15.5,
-                    ),
+                  color: Color(0xFF4A4A4A),
+                  fontWeight: FontWeight.w500,
+                  height: 1.5,
+                  fontSize: 14.5, // slightly smaller font
+                ),
               ),
             ),
           ),
         ),
-    const SizedBox(height: 4,),
+
+        const SizedBox(height: 6), // reduced spacing
+
+        // Email Support Card
         Semantics(
           label: 'Contact support via email',
           child: _buildSupportCard(
@@ -335,14 +337,17 @@ Widget _maincon() {
             trailing: Tooltip(
               message: 'Copy email to clipboard',
               child: IconButton(
-                icon: const Icon(Icons.copy_rounded, color: Colors.grey),
+                icon: const Icon(Icons.copy_rounded, color: Colors.grey, size: 20),
                 onPressed: _copyEmail,
               ),
             ),
             onTap: () {}, 
           ),
         ),
-        const SizedBox(height: 12),
+
+        const SizedBox(height: 10), // tighter spacing
+
+        // Callback Support Card
         Semantics(
           label: 'Request a phone callback from support',
           child: _buildSupportCard(
@@ -357,15 +362,13 @@ Widget _maincon() {
                   backgroundColor: const Color(0xFF1D4D61),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13.5, // slightly smaller text
                   ),
-                  textStyle:const TextStyle(
-                        fontWeight: FontWeight.w500,
-                      ),
                 ),
                 onPressed: _requestCallback,
                 child: const Text("Get a callback"),
@@ -374,9 +377,8 @@ Widget _maincon() {
           ),
         ),
 
-        const SizedBox(height: 24),
-
-     ],
+        const SizedBox(height: 18), // reduced bottom spacing
+      ],
     ),
   );
 }
@@ -414,6 +416,7 @@ Widget _mainView() => Scaffold(
 
 
 
+
 Widget _buildSupportCard({
   required IconData icon,
   required Color iconColor,
@@ -442,11 +445,11 @@ Widget _buildSupportCard({
           ),
           title: Text(
             title,
-            style: const TextStyle( fontWeight: FontWeight.w600, fontSize: 16, color: Color(0xFF1C1C1E), ),
+            style: const TextStyle( fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF1C1C1E), ),
           ),
           subtitle: Text(
             subtitle,
-           style: const TextStyle(color: Colors.black54),
+           style: const TextStyle(color: Colors.black54, fontSize: 12,),
           ),
           trailing: trailing,
         ),
@@ -454,6 +457,16 @@ Widget _buildSupportCard({
     ),
   );
 }
+
+
+
+
+
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {

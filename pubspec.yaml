@@ -65,7 +65,30 @@ flutter_native_splash:
   ios: true
   fullscreen: true
 
+
 flutter:
   uses-material-design: true
   assets:
-    - assets/icon/Cyklze_ikn.png
+  - assets/icon/Cyklze_ikn.png
+  - assets/images/background.png
+  - assets/images/ewaste.jpg
+  - assets/images/cardboard.jpg 
+  - assets/images/plastic.jpg
+  - assets/images/glass.jpg
+  - assets/images/news.jpg
+  - assets/images/help.jpg
+  - assets/images/truck.jpg
+  - assets/images/history.jpg
+  - assets/images/faq.jpg
+  - assets/images/thumbsup.jpg
+  - assets/images/price.jpg
+  - assets/images/head.png
+  - assets/images/copper.jpg
+  - assets/images/wcopper.jpg
+  - assets/images/iron.jpg
+  - assets/images/fridge.jpg
+  - assets/images/ac.jpg
+  - assets/images/now.gif
+  - assets/images/silver.jpg
+  - assets/images/brass.jpg
+  - assets/images/books.jpg

@@ -112,15 +112,19 @@ void confirmLogout(BuildContext context) {
 
 Future<void> fetchProfile() async {
 
-
-
-  if (!await hasInternetConnection()) {
-
-    if (mounted) {
-      setState(() => _state = Pagestate.offline);
-    }
+final   provider = Provider.of<PickupProvider>(context, listen: false);
+  if (!await provider.hasInternetConnection()) {
+    setState(() => _state = Pagestate.offline);
     return;
   }
+
+  // if (!await hasInternetConnection()) {
+
+  //   if (mounted) {
+  //     setState(() => _state = Pagestate.offline);
+  //   }
+  //   return;
+  // }
 
   final token = await SecureStorage.getAccessToken();
   if (token == null || token.isEmpty) {
@@ -399,102 +403,269 @@ Widget _pickupSummaryCard() {
   final pickupProvider = Provider.of<PickupProvider>(context, listen: false);
 
   return Container(
-    
-   decoration: BoxDecoration(
+    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
       color: Colors.white,
-  borderRadius: BorderRadius.circular(12),
-   ),
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: Colors.grey.shade300, width: 0.8),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.04),
+          blurRadius: 6,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
     child: Padding(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-    
-          Semantics(
-            label: 'Pickup Summary',
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Pickup Summary',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
-                Tooltip(
-      message: 'Preview the pickup details',
-      child: TextButton(
-    onPressed: () => _showOrderPreview(),
-    style: TextButton.styleFrom(
-      backgroundColor: const Color(0xFF1D4D61),     
-      foregroundColor: Colors.white,    
-    ),
-    child: const Text('Preview'),
-      ),
-    ),
-    
-              ],
-            ),
-          ),
-          const SizedBox(height: 3),
-          Semantics(
-            label: 'Items',
-            child: const Text('Items', style: TextStyle(fontWeight: FontWeight.w700)),
-          ),
-      
-          Semantics(
-            label: 'Selected items',
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: pickupProvider.selectedItems
-                  .map(
-                    (e) => Chip(backgroundColor: Colors.white,
-                      label: Semantics(
-                        label: 'Item: $e',
-                        child: Text(e,style: const TextStyle(color: Colors.black),),
-                      ),
+          // === Header ===
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: const [
+                  Icon(Icons.assignment_outlined,
+                      size: 16, color: Color(0xFF1D4D61)),
+                  SizedBox(width: 6),
+                  Text(
+                    'Pickup Summary',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1D4D61),
                     ),
-                  )
-                  .toList(),
+                  ),
+                ],
+              ),
+              Tooltip(
+                message: 'Preview the pickup details',
+                child: TextButton.icon(
+                  onPressed: () => _showOrderPreview(),
+                  icon: const Icon(Icons.remove_red_eye_outlined,
+                      color: Colors.white, size: 14),
+                  label: const Text(
+                    'Preview',
+                    style: TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color(0xFF1D4D61),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 6),
+          const Divider(height: 12, thickness: 0.8, color: Color(0xFFE0E0E0)),
+
+          // === Items Section ===
+          const Text(
+            'Items',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 13.5,
+              color: Colors.black87,
             ),
           ),
-       
-          const SizedBox(height: 3),
-          Semantics(
-            label: 'Pickup Details',
-            child: Column(
-              children: [
-               
-                Semantics(
-                  label: 'Pickup Date: ${pickupProvider.selectedDate}',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.calendar_month_outlined,
-                          size: 18, color: Colors.black54),
-                      const SizedBox(width: 8),
-                      Text(pickupProvider.selectedDate!,
-                          style: const TextStyle(fontWeight: FontWeight.w600)),
-                    ],
-                  ),
-                ),
-    
-                Semantics(
-                  label: 'Pickup Time: ${pickupProvider.selectedTimeRange}',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.access_time_outlined,
-                          size: 18, color: Colors.black54),
-                      const SizedBox(width: 8),
-                      Text(pickupProvider.selectedTimeRange!),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-              ],
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: pickupProvider.selectedItems.isNotEmpty
+                ? pickupProvider.selectedItems.map((e) {
+                    return Chip(
+                      backgroundColor: const Color(0xFFF5F7FA),
+                      labelPadding:
+                          const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity:
+                          const VisualDensity(horizontal: -4, vertical: -4),
+                      label: Text(
+                        e,
+                        style: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    );
+                  }).toList()
+                : [
+                    const Chip(
+                      label: Text(
+                        'No items selected',
+                        style:
+                            TextStyle(color: Colors.black54, fontSize: 12.5),
+                      ),
+                      backgroundColor: Color(0xFFF5F7FA),
+                    ),
+                  ],
+          ),
+
+          const SizedBox(height: 8),
+          const Divider(height: 10, thickness: 0.8, color: Color(0xFFE0E0E0)),
+
+          // === Pickup Details ===
+          const Text(
+            'Pickup Details',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 13.5,
+              color: Colors.black87,
             ),
+          ),
+          const SizedBox(height: 6),
+
+          Row(
+            children: [
+              const Icon(Icons.calendar_today_outlined,
+                  size: 15, color: Colors.black54),
+              const SizedBox(width: 6),
+              Text(
+                pickupProvider.selectedDate ?? '—',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+
+          Row(
+            children: [
+              const Icon(Icons.access_time_outlined,
+                  size: 15, color: Colors.black54),
+              const SizedBox(width: 6),
+              Text(
+                pickupProvider.selectedTimeRange ?? '—',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     ),
   );
 }
+
+
+
+
+
+// Widget _pickupSummaryCard() {
+//   final pickupProvider = Provider.of<PickupProvider>(context, listen: false);
+
+//   return Container(
+    
+//    decoration: BoxDecoration(
+//       color: Colors.white,
+//   borderRadius: BorderRadius.circular(12),
+//    ),
+//     child: Padding(
+//       padding: const EdgeInsets.all(14),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+    
+//           Semantics(
+//             label: 'Pickup Summary',
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 const Text('Pickup Summary',
+//                     style: TextStyle(fontWeight: FontWeight.w700)),
+//                 Tooltip(
+//       message: 'Preview the pickup details',
+//       child: TextButton(
+//     onPressed: () => _showOrderPreview(),
+//     style: TextButton.styleFrom(
+//       backgroundColor: const Color(0xFF1D4D61),     
+//       foregroundColor: Colors.white,    
+//     ),
+//     child: const Text('Preview'),
+//       ),
+//     ),
+    
+//               ],
+//             ),
+//           ),
+//           const SizedBox(height: 3),
+//           Semantics(
+//             label: 'Items',
+//             child: const Text('Items', style: TextStyle(fontWeight: FontWeight.w700)),
+//           ),
+      
+//           Semantics(
+//             label: 'Selected items',
+//             child: Wrap(
+//               spacing: 8,
+//               runSpacing: 8,
+//               children: pickupProvider.selectedItems
+//                   .map(
+//                     (e) => Chip(backgroundColor: Colors.white,
+//                       label: Semantics(
+//                         label: 'Item: $e',
+//                         child: Text(e,style: const TextStyle(color: Colors.black),),
+//                       ),
+//                     ),
+//                   )
+//                   .toList(),
+//             ),
+//           ),
+       
+//           const SizedBox(height: 3),
+//           Semantics(
+//             label: 'Pickup Details',
+//             child: Column(
+//               children: [
+               
+//                 Semantics(
+//                   label: 'Pickup Date: ${pickupProvider.selectedDate}',
+//                   child: Row(
+//                     children: [
+//                       const Icon(Icons.calendar_month_outlined,
+//                           size: 18, color: Colors.black54),
+//                       const SizedBox(width: 8),
+//                       Text(pickupProvider.selectedDate!,
+//                           style: const TextStyle(fontWeight: FontWeight.w600)),
+//                     ],
+//                   ),
+//                 ),
+    
+//                 Semantics(
+//                   label: 'Pickup Time: ${pickupProvider.selectedTimeRange}',
+//                   child: Row(
+//                     children: [
+//                       const Icon(Icons.access_time_outlined,
+//                           size: 18, color: Colors.black54),
+//                       const SizedBox(width: 8),
+//                       Text(pickupProvider.selectedTimeRange!),
+//                     ],
+//                   ),
+//                 ),
+//                 const SizedBox(width: 12),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     ),
+//   );
+// }
 
 Widget _addressCard() {
   return Container(
@@ -534,7 +705,8 @@ Widget _addressCard() {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: Colors.white,
+      //Colors.grey.shade50,
       appBar: AppBar(
         flexibleSpace: Container(
           decoration:const BoxDecoration(
@@ -554,99 +726,256 @@ Widget _addressCard() {
         ),
         elevation: 0,
       ),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: _buildBody(),
-      ),
+      body:
+       _buildBody(),
     );
   }
 
 Widget _readyView() {
-  return SafeArea(
-    child: SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+  return 
+ Stack(
+    children: [
 
-          Semantics(
-            label: 'Pickup summary',
-            child: _pickupSummaryCard(),
-          ),
+SingleChildScrollView(
+  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // === PICKUP SUMMARY CARD ===
+      Semantics(
+        label: 'Pickup summary section',
+        child: _pickupSummaryCard(),
+      ),
 
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              'Pickup Address',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+      const SizedBox(height: 10),
+
+      // === PICKUP ADDRESS HEADER ===
+      Text(
+        'Pickup Address',
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+              color: const Color(0xFF1D4D61),
             ),
-          ),
-          const SizedBox(height: 2),
-          Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              'This is the address selected for the pickup.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-              ),
+      ),
+      const SizedBox(height: 3),
+      Text(
+        'This is the address selected for the pickup.',
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.grey[700],
+              height: 1.2,
+              fontSize: 12.5,
             ),
-          ),
-          const SizedBox(height: 6),
-          Semantics(
-            label: 'Pickup address details',
-            child: _addressCard(),
-          ),
+      ),
 
-          const SizedBox(height: 8),
-Padding(
-  padding: const EdgeInsets.all(8.0),
-  child: Semantics(
-    container: true,
-    label: 'Confirm pickup section',
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      const SizedBox(height: 8),
 
-        Semantics(
-          button: true,
-          label: 'Tap to confirm pickup',
-          child: SizedBox(
-            width: double.infinity, 
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1D4D61),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+      // === ADDRESS CARD ===
+      Semantics(
+        label: 'Pickup address details',
+        child: _addressCard(),
+      ),
+
+      const SizedBox(height: 14),
+
+      // === CONFIRM BUTTON SECTION ===
+      Semantics(
+        container: true,
+        label: 'Confirm pickup section',
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300, width: 0.8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 5,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Ready to confirm your pickup?',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13.5,
+                      color: const Color(0xFF1D4D61),
+                    ),
+              ),
+              const SizedBox(height: 8),
+
+              SizedBox(
+                width: double.infinity,
+                height: 42,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.check_circle_outline,
+                      color: Colors.white, size: 18),
+                  label: const Text(
+                    'Confirm Pickup',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1D4D61),
+                    elevation: 2,
+                    shadowColor: Colors.black.withOpacity(0.2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  ),
+                  onPressed: () async {
+                    await fetchProfile();
+                  },
                 ),
               ),
-              onPressed: () async{
-                await fetchProfile();
-              },
-              child: const Text(
-                'Confirm Pickup',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ),
+            ],
           ),
         ),
-      ],
-    ),
-  ),
-),
-
-          const SizedBox(height: 24),
-
-        ],
       ),
-    ),
+
+      const SizedBox(height: 18),
+
+      // === BOTTOM ILLUSTRATION ===
+      Align(
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/thumbsup.jpg',
+              width: 120,
+              height: 90,
+              fit: BoxFit.cover,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Everything looks great!',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[700],
+                    fontSize: 12.5,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+)
+
+
+
+
+
+
+
+
+
+      // Scrollable content
+      // SingleChildScrollView(
+      //   padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 20.0),
+      //   child: Column(
+      //     crossAxisAlignment: CrossAxisAlignment.start,
+      //     children: [
+      //       Semantics(
+      //         label: 'Pickup summary',
+      //         child: _pickupSummaryCard(),
+      //       ),
+      //       const SizedBox(height: 8),
+      //       Padding(
+      //         padding: const EdgeInsets.symmetric(horizontal: 8),
+      //         child: Text(
+      //           'Pickup Address',
+      //           style: Theme.of(context).textTheme.titleMedium?.copyWith(
+      //                 fontWeight: FontWeight.w600,
+      //               ),
+      //         ),
+      //       ),
+      //       const SizedBox(height: 2),
+      //       Padding(
+      //         padding: const EdgeInsets.symmetric(horizontal: 8),
+      //         child: Text(
+      //           'This is the address selected for the pickup.',
+      //           style: Theme.of(context).textTheme.bodySmall?.copyWith(
+      //                 color: Colors.grey[600],
+      //               ),
+      //         ),
+      //       ),
+      //       const SizedBox(height: 6),
+      //       Semantics(
+      //         label: 'Pickup address details',
+      //         child: _addressCard(),
+      //       ),
+      //       const SizedBox(height: 8),
+      //       Padding(
+      //         padding: const EdgeInsets.all(8.0),
+      //         child: Semantics(
+      //           container: true,
+      //           label: 'Confirm pickup section',
+      //           child: Column(
+      //             crossAxisAlignment: CrossAxisAlignment.start,
+      //             children: [
+      //               Semantics(
+      //                 button: true,
+      //                 label: 'Tap to confirm pickup',
+      //                 child: SizedBox(
+      //                   width: double.infinity,
+      //                   child: ElevatedButton(
+      //                     style: ElevatedButton.styleFrom(
+      //                       backgroundColor: const Color(0xFF1D4D61),
+      //                       foregroundColor: Colors.white,
+      //                       padding: const EdgeInsets.symmetric(
+      //                           horizontal: 24, vertical: 14),
+      //                       shape: RoundedRectangleBorder(
+      //                         borderRadius: BorderRadius.circular(8),
+      //                       ),
+      //                     ),
+      //                     onPressed: () async {
+      //                       await fetchProfile();
+      //                     },
+      //                     child: const Text(
+      //                       'Confirm Pickup',
+      //                       style: TextStyle(
+      //                         fontWeight: FontWeight.bold,
+      //                         fontSize: 16,
+      //                       ),
+      //                     ),
+      //                   ),
+      //                 ),
+      //               ),
+      //             ],
+      //           ),
+      //         ),
+      //       ),
+      //       const SizedBox(height: 24),
+      //        Align(
+      //        alignment: Alignment.centerRight,
+      //   child: Image.asset(
+      //     'assets/images/thumbsup.jpg',
+      //     width: 150,
+      //     height: 110,
+      //     fit: BoxFit.cover,
+      //   ),
+      // ),
+      //     ],
+      //   ),
+      // ),
+
+      // Positioned image (over the whole screen)
+   
+    ],
   );
+
 }
 }

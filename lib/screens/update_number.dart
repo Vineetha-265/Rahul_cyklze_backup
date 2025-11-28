@@ -182,11 +182,16 @@ class _EditMobileNumberPageState extends State<EditMobileNumberPage> {
   Future<void> _handleSendOtp() async {
     if (!_validatePhone()) return;
 
-final online = await NetworkUtils.isNetworkAvailable();
-if (!online) {
-  _showOffline(); 
-  return;
-}
+// final online = await NetworkUtils.isNetworkAvailable();
+// if (!online) {
+//   _showOffline(); 
+//   return;
+// }
+final   provider = Provider.of<PickupProvider>(context, listen: false);
+  if (!await provider.hasInternetConnection()) {
+    _showOffline(); 
+    return;
+  }
 
 
 
@@ -229,11 +234,12 @@ if (!online) {
   }
 
   Future<void> _handleVerifyOtp() async {
-    final online = await NetworkUtils.isNetworkAvailable();
-    if (!online) {
-      _showOffline();
-      return;
-    }
+final   provider = Provider.of<PickupProvider>(context, listen: false);
+  if (!await provider.hasInternetConnection()) {
+    _showOffline(); 
+    return;
+  }
+    
 
     final accessToken = await SecureStorage.getAccessToken();
     if (accessToken == null || accessToken.isEmpty) {
