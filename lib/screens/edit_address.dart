@@ -1,3 +1,4 @@
+import 'package:cyklze/SecureStorage/securestorage.dart';
 import 'package:flutter/material.dart';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/services.dart';
@@ -93,7 +94,7 @@ String? _selectedCity = 'Hyderabad';
     }
 
     final full = '$street, $area, $_selectedCity, $postal';
-
+await SecureStorage.saveAddress(full);
 
     Navigator.pop(context); 
     _showSnack("Address Changed successfully");

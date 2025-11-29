@@ -14,7 +14,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-
 import '../widgets/otp_fields.dart';
 
 const String kEndpoint =
@@ -45,20 +44,18 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
   Timer? _timer;
 
   Pagestate _state = Pagestate.loggedIn;
-  StreamSubscription<List<ConnectivityResult>>? _connSub;
+  // StreamSubscription<List<ConnectivityResult>>? _connSub;
 
-  late AnimationController _animController;
-  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    _animController =
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOut),
-    );
+    // _animController =
+    //     AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
+    // _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
+    //   CurvedAnimation(parent: _animController, curve: Curves.easeOut),
+    // );
 
     // _initConnectivity();
 
@@ -84,8 +81,8 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
   @override
   void dispose() {
     _timer?.cancel();
-    _animController.dispose();
-    _connSub?.cancel();
+  
+    // _connSub?.cancel();
     phoneController.dispose();
    
       otpControllers.dispose();
@@ -263,33 +260,22 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
 Widget _mainContent() {
   final size = MediaQuery.of(context).size;
 
-  return PopScope(
-    canPop: false, 
-    onPopInvokedWithResult: (didPop, result) {
-      if (!didPop) {
-       
-        Navigator.pop(context, false);
-      }
-    },
-    child: SafeArea(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 1000),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        child: Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                   //_TopBar(),
-                            const SizedBox(height: 14),
-                _buildLeftCard(size, false),
-                const SizedBox(height: 14),
-                _buildRightCard(size, false),
-                  const SizedBox(height: 12),
-                 const TermsText(),
-                        
-              ],
-            ),
-          ),
+  return SafeArea(
+    child: Container(
+      constraints: const BoxConstraints(maxWidth: 1000),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+               //_TopBar(),
+                        const SizedBox(height: 14),
+            _buildLeftCard(size, false),
+            const SizedBox(height: 14),
+            _buildRightCard(size, false),
+              const SizedBox(height: 12),
+             const TermsText(),
+                    
+          ],
         ),
       ),
     ),
@@ -376,48 +362,44 @@ Widget _mainContent() {
             ),
           ],
           const SizedBox(height: 12),
-          AnimatedBuilder(
-            animation: _scaleAnimation,
-            builder: (context, child) =>
-                Transform.scale(scale: _scaleAnimation.value, child: child),
-            child: SizedBox(
-              height: 56,
-              child: ElevatedButton(
-                onPressed: (isSending || isVerifying)
-                    ? null
-                    : () async {
-                        _animController.forward().then((_) {
-                          _animController.reverse();
-                        });
-                        if (!otpSent) {
-                          await sendOtp();
-                        } else {
-                          await verifyOtp();
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1D4D61),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                child: isSending || isVerifying
-                    ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.4,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(
-                        !otpSent ? "Send OTP" : "Verify OTP",
-                        style: const TextStyle(color: Colors.white,
-                            fontSize: 16, fontWeight: FontWeight.w700),
-                      ),
-              ),
+       SizedBox(
+  height: 56,
+  child: ElevatedButton(
+    onPressed: (isSending || isVerifying)
+        ? null
+        : () async {
+            if (!otpSent) {
+              await sendOtp();
+            } else {
+              await verifyOtp();
+            }
+          },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF1D4D61),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+    child: isSending || isVerifying
+        ? const SizedBox(
+            height: 22,
+            width: 22,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.4,
+              color: Colors.white,
+            ),
+          )
+        : Text(
+            !otpSent ? "Send OTP" : "Verify OTP",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 12),
+  ),
+)
+,  const SizedBox(height: 12),
          
         ],
       ),

@@ -371,11 +371,9 @@ class InvoicePage extends StatelessWidget {
           const SizedBox(height: 10),
           Align(
             alignment: Alignment.center,
-            child: Expanded(
-              child: Text(
-                "Thank you for choosing Cyklze!",
-                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-              ),
+            child: Text(
+              "Thank you for choosing Cyklze!",
+              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
             ),
           )
         ],
@@ -385,7 +383,7 @@ class InvoicePage extends StatelessWidget {
 
   // HEADER
 Widget _buildHeader() {
-  return Wrap(
+  return const Wrap(
     alignment: WrapAlignment.spaceBetween,
     runSpacing: 12,
     children: [
