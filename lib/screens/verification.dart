@@ -504,61 +504,35 @@ class _PhoneInputRow extends StatelessWidget {
 class TermsText extends StatelessWidget {
   const TermsText({super.key});
 
-  void _launchURL(String url) async {
-    final uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      throw 'Could not launch $url';
-    }
+  void _launchURL(BuildContext context, String url, String title) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WebViewPage(url: url, bartitle: title),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      textAlign: TextAlign.center,
-      text: TextSpan(
-        style: const TextStyle(fontSize: 12, color: Colors.black),
-        children: [
-          const TextSpan(text: 'By continuing you agree to our '),
-          TextSpan(
-            text: 'Terms of Service',
-            style: const TextStyle(
-              color: Colors.blue,
-              decoration: TextDecoration.underline,
+    return Column(
+      children: [
+        Text("By continuing you agree to our", textAlign: TextAlign.center),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              onPressed: () => _launchURL(context, 'https://www.cyklze.com/Terms_of_Service.html', "Terms of Service"),
+              child: const Text('Terms of Service', style: TextStyle(decoration: TextDecoration.underline)),
             ),
-            recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                 Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => const WebViewPage(
-      url: 'https://www.cyklze.com/Terms_of_Service.html',bartitle: "Terms of Service",
-    ),
-  ),
-);
-              },
-          ),
-          const TextSpan(text: ' and '),
-          TextSpan(
-            text: 'Privacy Policy',
-            style: const TextStyle(
-              color: Colors.blue,
-              decoration: TextDecoration.underline,
+            const Text(' and '),
+            TextButton(
+              onPressed: () => _launchURL(context, 'https://www.cyklze.com/Privacy_policy.html', "Privacy Policy"),
+              child: const Text('Privacy Policy', style: TextStyle(decoration: TextDecoration.underline)),
             ),
-            recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => const WebViewPage(
-      url: 'https://www.cyklze.com/Privacy_policy.html',bartitle: "Privacy Policy",
-    ),
-  ),
-);
-              },
-          ),
-          const TextSpan(text: '.'),
-        ],
-      ),
+          ],
+        )
+      ],
     );
   }
 }

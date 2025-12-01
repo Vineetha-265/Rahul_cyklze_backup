@@ -61,7 +61,7 @@ Widget build(BuildContext context) {
               // Schedule button
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1D4D61),
+                  color:  Colors.green[800],
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Padding(
