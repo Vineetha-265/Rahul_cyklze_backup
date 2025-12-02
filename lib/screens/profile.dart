@@ -39,12 +39,16 @@ class _ProfilePageState extends State<ProfilePage> {
   static const refreshUrl =
       "https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/handletoken";
 
-  @override
-  void initState() {
-    super.initState();
-      provider = Provider.of<PickupProvider>(context, listen: false);
+@override
+void initState() {
+  super.initState();
+
+  provider = Provider.of<PickupProvider>(context, listen: false);
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     fetchProfile();
-  }
+  });
+}
+
 
 
   Future<bool> _hasConnection() async {

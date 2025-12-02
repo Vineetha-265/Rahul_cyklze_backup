@@ -47,26 +47,14 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage>
   // StreamSubscription<List<ConnectivityResult>>? _connSub;
 
 
-  @override
-  void initState() {
-    super.initState();
-
-    // _animController =
-    //     AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
-    // _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-    //   CurvedAnimation(parent: _animController, curve: Curves.easeOut),
-    // );
-
-    // _initConnectivity();
-
-    // _connSub = Connectivity().onConnectivityChanged.listen((results) {
-    //   final hasNet = results.isNotEmpty && results.first != ConnectivityResult.none;
-    //   if (!mounted) return;
-    //   setState(() {
-    //     _state = hasNet ? Pagestate.loggedIn : Pagestate.offline;
-    //   });
-    // });
-  }
+@override
+void initState() {
+  super.initState();
+  _state = Pagestate.loading;
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _initConnectivity();
+  });
+}
 
   Future<void> _initConnectivity() async {
   //  _connSub = Connectivity().onConnectivityChanged.listen((results) {

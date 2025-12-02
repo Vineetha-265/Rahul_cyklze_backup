@@ -75,11 +75,13 @@ class _RequestsPageState extends State<RequestsPage> {
   static const int _maxRefreshAttempts = 1; 
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  @override
-  void initState() {
-    super.initState();
+@override
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     _checkNetworkAndProceed();
-  }
+  });
+}
 
   Future<void> _checkNetworkAndProceed() async {
     final online = await NetworkUtils.isNetworkAvailable();
@@ -431,7 +433,7 @@ void _showOrderDetails(RequestItem item) {
       case Pagestate.offline:
         return OfflineRetry(
       onRetry: _getOrders, 
-    ); {}
+    ); 
       case Pagestate.notLogged:
         return LoginRequired(
         message: "Please log in to see your pickups",
@@ -453,7 +455,7 @@ void _showOrderDetails(RequestItem item) {
         return  ErrorRetry(
               message: "Something went wrong",
               onRetry: _getOrders,
-            ); {}
+            ); 
       case Pagestate.loggedIn:
         return Column(
           children: [

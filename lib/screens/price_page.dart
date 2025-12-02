@@ -58,6 +58,14 @@ Future<bool> hasInternetConnection() async {
     return false;
   }
 }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+  fetchProducts();
+});
+  }
   Future<void> fetchProducts() async {
       setState(() {
     _state = PageState.loggedIn;
@@ -137,11 +145,7 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    fetchProducts();
-  }
+
 
   @override
   Widget build(BuildContext context) {
