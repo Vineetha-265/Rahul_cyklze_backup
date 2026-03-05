@@ -1,328 +1,438 @@
+import 'dart:io';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cyklze/Provider/pickup_provider.dart';
+import 'package:cyklze/SecureStorage/securestorage.dart';
+import 'package:cyklze/Views/error.dart';
+import 'package:cyklze/Views/loading.dart';
+import 'package:cyklze/Views/loginrequird.dart';
+import 'package:cyklze/Views/offline.dart';
+import 'package:cyklze/enums/page_state.dart';
 import 'package:cyklze/screens/address.dart';
+import 'package:cyklze/screens/verification.dart';
+import 'package:cyklze/widgets/tiltanimation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class PostalCodeRange {
+  final int min;
+  final int max;
+
+  PostalCodeRange({
+    required this.min,
+    required this.max,
+  });
+
+  factory PostalCodeRange.fromJson(Map<String, dynamic> json) {
+    return PostalCodeRange(
+      min: json['min'],
+      max: json['max'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'min': min,
+      'max': max,
+    };
+  }
+
+  bool contains(int postalCode) {
+    return postalCode >= min && postalCode <= max;
+  }
+}
+
+
+class AvailableDatesResponse {
+  final String message;
+  final List<String> dates;
+  final List<String> areas;
+  final List<String> cities;
+    final List<String> slots;
+    final List<PostalCodeRange> postalCodeRanges;
+     final String regx;
+
+  AvailableDatesResponse({
+    required this.message,
+    required this.dates,
+     required this.areas,
+      required this.cities,
+      required this.slots,
+       required this.postalCodeRanges,
+          required this.regx,
+  });
+
+  // Factory constructor to parse JSON
+  factory AvailableDatesResponse.fromJson(Map<String, dynamic> json) {
+    return AvailableDatesResponse(
+      message: json['message'] as String,
+         regx: json['regx'] as String,
+      dates: List<String>.from(json['dates'] as List<dynamic>),
+        areas: List<String>.from(json['areas'] as List<dynamic>),
+          cities: List<String>.from(json['cities'] as List<dynamic>),
+              slots: List<String>.from(json['slots'] as List<dynamic>),
+     postalCodeRanges: (json['postalCodeRanges'] as List<dynamic>)
+          .map((e) => PostalCodeRange.fromJson(e))
+          .toList(),
+    );
+  }
+
+  // Convert back to JSON if needed
+  Map<String, dynamic> toJson() {
+    return {
+      'message': message,
+      'dates': dates,
+      'areas': areas,
+      'cities': cities,
+      'slots': slots,
+      'regx': regx,
+       'postalCodeRanges':
+          postalCodeRanges.map((e) => e.toJson()).toList(),
+    };
+  }
+}
 
 class PickupDateTimeSelector extends StatefulWidget {
-   final List<String> names;
-  const PickupDateTimeSelector({Key? key, required this.names}) : super(key: key,);
+  final List<String> names;
 
-  @override
-  _PickupDateTimeSelectorState createState() => _PickupDateTimeSelectorState();
-}
-
-class _PickupDateTimeSelectorState extends State<PickupDateTimeSelector> {
-  String? selectedDate;
-  String? selectedTimeRange;
-
-  bool isTomorrow = false; 
-Future<void> _pickDate() async {
-  final now = DateTime.now();
-
-  // Determine if the current time is after 2 PM
-  final isAfter2PM = now.hour >= 14;
-
-  // Define today and tomorrow
-  final today = DateTime(now.year, now.month, now.day);
-  final tomorrow = today.add(const Duration(days: 1));
-
-  // If after 2 PM, only allow tomorrow and onward; otherwise, today and onward
-  final firstDate = isAfter2PM ? tomorrow : today;
-
-  // Set a maximum date (e.g., 7 days from tomorrow)
-  final maxDate = tomorrow;
-
-  final picked = await showDatePicker(
-    context: context,
-    firstDate: firstDate,
-    lastDate: maxDate,
-    initialDate: firstDate,
-    builder: (context, child) {
-      return Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: Color(0xFF1D4D61),
-            onPrimary: Colors.white,
-            onSurface: Colors.black,
-          ),
-          textButtonTheme: TextButtonThemeData(
-            style: TextButton.styleFrom(
-              foregroundColor: Color(0xFF1D4D61),
-            ),
-          ),
-        ),
-        child: child!,
-      );
-    },
-  );
-
-  if (picked != null) {
-    final dateOnly = DateTime(picked.year, picked.month, picked.day);
-    final formatted = DateFormat('dd MMM yyyy').format(dateOnly);
-final now = DateTime.now();
-final today = DateTime(now.year, now.month, now.day);
-    setState(() {
-      selectedDate = formatted;
-
-      if(picked.isAfter(today)){
- isTomorrow = true;
-      }else{
-        isTomorrow = false;
-      }
-    });
-  }
-}
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle("Select a Pickup Date"),
-        const SizedBox(height: 5),
-        Text(
-          "Select an appropriate date that suits you best.",
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-                height: 1.3,
-              ),
-        ),
-        const SizedBox(height: 10),
-        Semantics(
-          label: 'Select pickup date',
-          child: InkWell(
-            onTap: _pickDate,
-            child: Card(
-              elevation: 3,
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Color(0xFF1D4D61),
-                    child: Icon(Icons.calendar_today, color: Colors.white),
-                  ),
-                  title: Text(
-                    selectedDate == null
-                        ? "Choose a date"
-                        : selectedDate!,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 28),
-       if (isTomorrow) 
-
-_buildPickupSlotSection(), 
-   Semantics(
-            button: true,
-            label: 'Continue to enter address with selected date and time',
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                    colors: [Color(0xFF1D4D61), Color(0xFF163B4B)],
-                ),
-                borderRadius: BorderRadius.circular(12),
-  
-              ),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  minimumSize: const Size(double.infinity, 52),
-                ),
-                onPressed: () async {
-                  if (isTomorrow) {
-  if (selectedTimeRange == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("Please select a time slot")),
-                    );
-                    return;
-                  }
-                  }
-                
-
- if (selectedDate == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("Please a pickup select date")),
-                    );
-                    return;
-                  }
-
-
-
-                  final date = selectedDate.toString();
-                  final time = selectedTimeRange.toString();
-
-                  // final List<String> selectedItems = [];
-                  // if (plasticKg > 0) selectedItems.add("Plastic: $plasticKg Kg");
-                  // if (glassKg > 0) selectedItems.add("Glass: $glassKg Kg");
-                  // if (paperKg > 0) selectedItems.add("Paper: $paperKg Kg");
-                  // if (metalKg > 0) selectedItems.add("Metal: $metalKg Kg");
-                  // if (ewasteKg > 0) selectedItems.add("E-Waste: $ewasteKg Kg");
-                  // if (cardKg > 0) selectedItems.add("Cardboard: $cardKg Kg");
-                  // if (bookskg > 0) selectedItems.add("Books: $bookskg Kg");
-                  // if (cwirekg > 0) selectedItems.add("Copper : $cwirekg Kg");
-                  // if (wirekg > 0) selectedItems.add("Copper wire: $wirekg Kg");
-                  // if (silverkg > 0) selectedItems.add("Silver: $silverkg Kg");
-                  // if (brasskg > 0) selectedItems.add("Silver: $brasskg Kg");
-                  //  if (fridgekg > 0) selectedItems.add("Fridge: $fridgekg Qty");
-                  //  if (ackg > 0) selectedItems.add("Ac: $ackg Qty");
-                  //  if (mixedkg > 0) selectedItems.add("mixed waste: $mixedkg Kg");
-                   
-
-
-
-  // int bookskg = 0;
-  // int cwirekg = 0;
-  // int wirekg = 0;
-  // int silverkg = 0;
-  // int brasskg = 0;
-  // int fridgekg = 0;
-  // int ackg = 0;
-  // int mixedkg = 0;
-
- if (widget.names.isEmpty) {
-                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("Please enter the estimated weight of recycables.")),
-                    );
-                    return;
-                  }
-               await Provider.of<PickupProvider>(context, listen: false).setPickupDetails(
-  date: date,
-  time: (time.isEmpty || time.toString().contains("null")) ? "today" : time,
-  type: "General",
-  items: widget.names,
-);
-
-
-Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => CreativeAddressPage(
-      selectedTimeRange: (selectedTimeRange == null || selectedTimeRange.toString().isEmpty)
-          ? "today"
-          : selectedTimeRange.toString(),
-      selectedDate: selectedDate.toString(),
-      selectedType: "General",
-      selectedItems: widget.names,
-    ),
-  ),
-);
-
-
-
-
-
-                },
-                child: const Text(
-                  "Continue to Address",
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold,color: Colors.white),
-                ),
-              ),
-            ),
-          ),
-
-         ],
-    );
-  }
-  Widget _buildPickupSlotSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SizedBox(height: 28),
-      _buildSectionTitle("Select a Pickup slot"),
-      Text(
-        "Select your preferred time slot.",
-        style: TextStyle(
-          color: Colors.grey[600],
-          height: 1.3,
-        ),
-      ),
-      const SizedBox(height: 16),
-      Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: [
-          TimeChip(
-            label: "8 AM - 11 AM",
-            selectedTimeRange: selectedTimeRange,
-            onSelected: (value) =>
-                setState(() => selectedTimeRange = value),
-          ),
-          TimeChip(
-            label: "11 AM - 1 PM",
-            selectedTimeRange: selectedTimeRange,
-            onSelected: (value) =>
-                setState(() => selectedTimeRange = value),
-          ),
-          TimeChip(
-            label: "1 PM - 3 PM",
-            selectedTimeRange: selectedTimeRange,
-            onSelected: (value) =>
-                setState(() => selectedTimeRange = value),
-          ),
-          TimeChip(
-            label: "3 PM - 6 PM",
-            selectedTimeRange: selectedTimeRange,
-            onSelected: (value) =>
-                setState(() => selectedTimeRange = value),
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
-}
-
-/// Simple reusable TimeChip widget
-class TimeChip extends StatelessWidget {
-  final String label;
-  final String? selectedTimeRange;
-  final ValueChanged<String> onSelected;
-
-  const TimeChip({
+  const PickupDateTimeSelector({
     Key? key,
-    required this.label,
-    required this.selectedTimeRange,
-    required this.onSelected,
+    required this.names,
   }) : super(key: key);
 
   @override
+  State<PickupDateTimeSelector> createState() =>
+      _PickupDateTimeSelectorState();
+}
+
+class _PickupDateTimeSelectorState
+    extends State<PickupDateTimeSelector> {
+  String selectedDate = "Today";
+  String? selectedTimeRange;
+  int? selectedIndex;
+
+  String apiMessage = '';
+  Pagestate _state = Pagestate.loading;
+
+  List<String> availableDates = [];
+  List<String> slots = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
+
+  Future<void> getData() async {
+    final provider =
+        Provider.of<PickupProvider>(context, listen: false);
+
+    if (!await provider.hasInternetConnection()) {
+      setState(() => _state = Pagestate.offline);
+      return;
+    }
+
+    setState(() => _state = Pagestate.loading);
+
+    const apiUrl =
+        'https://api.cyklze.com/cyklzee/dateandaddress';
+
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        final jsonMap = json.decode(response.body);
+        final data = AvailableDatesResponse.fromJson(jsonMap);
+
+        setState(() {
+          apiMessage = data.message;
+          availableDates = data.dates;
+          slots = data.slots;
+          _state = Pagestate.loggedIn;
+        });
+
+        await SecureStorage.saveAreas(data.areas);
+        await SecureStorage.saveCities(data.cities);
+        await SecureStorage.savePostalRange(
+            data.postalCodeRanges);
+        await SecureStorage.saveRegx(data.regx);
+      } else {
+        setState(() => _state = Pagestate.error);
+      }
+    } catch (_) {
+      setState(() => _state = Pagestate.error);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bool isSelected = selectedTimeRange == label;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => onSelected(label),
-      selectedColor: const Color(0xFF1D4D61),
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.black,
+    switch (_state) {
+      case Pagestate.loading:
+        return const ElegantLoadingOverlay();
+
+      case Pagestate.offline:
+        return OfflineRetry(onRetry: getData);
+
+      case Pagestate.error:
+        return ErrorRetry(
+          message: "Something went wrong",
+          onRetry: getData,
+        );
+
+      case Pagestate.notLogged:
+        return LoginRequired(
+          message: "Please log in to confirm pickup",
+          onLogin: () {},
+        );
+
+      case Pagestate.loggedIn:
+      default:
+        return _buildMainUI();
+    }
+  }
+
+  Widget _buildMainUI() {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Select a Pickup Date",
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Choose a date that suits you.",
+              style: TextStyle(
+                  color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 20),
+
+            /// DATE CHIPS
+            if (availableDates.isNotEmpty)
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: List.generate(
+                  availableDates.length,
+                  (index) {
+                    final date =
+                        availableDates[index];
+                    final isSelected =
+                        selectedIndex == index;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedDate = date;
+                          selectedIndex = index;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(
+                            milliseconds: 200),
+                        padding:
+                            const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? const Color(
+                                  0xFF1D4D61)
+                              : Colors.grey[200],
+                          borderRadius:
+                              BorderRadius.circular(
+                                  12),
+                        ),
+                        child: Text(
+                          date,
+                          style: TextStyle(
+                            fontWeight:
+                                FontWeight.w600,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+            const SizedBox(height: 28),
+
+            /// HIGH TRAFFIC UI
+            if (apiMessage.contains("surge"))
+              Center(
+                child: Column(
+                  children: const [
+                    Icon(Icons.trending_up,
+                        size: 80,
+                        color:
+                            Colors.deepPurple),
+                    SizedBox(height: 16),
+                    Text(
+                      "High Traffic Right Now",
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight:
+                              FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "We're experiencing heavy demand.\nPlease try again shortly.",
+                      textAlign:
+                          TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+
+            /// TIME SLOTS
+            if (slots.isNotEmpty &&
+                selectedDate != "Today")
+              _buildSlotSection(),
+
+            const SizedBox(height: 40),
+
+            /// CONTINUE BUTTON
+            _buildContinueButton(),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildSlotSection() {
+    return Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Select a Pickup Slot",
+          style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: slots.map((slot) {
+            final isSelected =
+                selectedTimeRange == slot;
+
+            return ChoiceChip(
+              label: Text(slot),
+              selected: isSelected,
+              selectedColor:
+                  const Color(0xFF1D4D61),
+              labelStyle: TextStyle(
+                color: isSelected
+                    ? Colors.white
+                    : Colors.black,
+              ),
+              onSelected: (_) {
+                setState(() {
+                  selectedTimeRange = slot;
+                });
+              },
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 30),
+      ],
+    );
+  }
+
+  Widget _buildContinueButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor:
+              const Color(0xFF1D4D61),
+          minimumSize:
+              const Size(double.infinity, 52),
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: () async {
+          if (selectedDate.isEmpty) {
+            _showSnack(
+                "Please select a pickup date");
+            return;
+          }
+
+          if (selectedDate != "Today" &&
+              selectedTimeRange == null) {
+            _showSnack(
+                "Please select a time slot");
+            return;
+          }
+
+          if (widget.names.isEmpty) {
+            _showSnack(
+                "Please enter the estimated weight of recyclables.");
+            return;
+          }
+
+          await Provider.of<PickupProvider>(
+                  context,
+                  listen: false)
+              .setPickupDetails(
+            date: selectedDate,
+            time:
+                selectedTimeRange ?? "today",
+            type: "General",
+            items: widget.names,
+          );
+
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(
+          //     builder: (_) =>
+          //         CreativeAddressPage(
+          //       selectedTimeRange:
+          //           selectedTimeRange ??
+          //               "today",
+          //       selectedDate:
+          //           selectedDate,
+          //       selectedType:
+          //           "General",
+          //       selectedItems:
+          //           widget.names,
+          //     ),
+          //   ),
+          // );
+        },
+        child: const Text(
+          "Continue to Address",
+          style: TextStyle(
+              fontSize: 16,
+              fontWeight:
+                  FontWeight.bold,
+              color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      SnackBar(content: Text(message)),
     );
   }
 }

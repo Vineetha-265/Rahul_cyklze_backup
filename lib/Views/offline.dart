@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class OfflineRetry extends StatelessWidget {
   final VoidCallback onRetry;
@@ -30,7 +31,7 @@ class OfflineRetry extends StatelessWidget {
             Text(
               message ?? "You are offline",
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
                   ),
@@ -39,7 +40,7 @@ class OfflineRetry extends StatelessWidget {
             Text(
               "Check your internet connection\nand try again.",
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: GoogleFonts.poppins(
                     color: Colors.grey[600],
                   ),
             ),
@@ -75,9 +76,9 @@ class OfflineRetry extends StatelessWidget {
                   ),
                   child: Container(
                     alignment: Alignment.center,
-                    child: const Text(
+                    child:  Text(
                       "Retry",
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,

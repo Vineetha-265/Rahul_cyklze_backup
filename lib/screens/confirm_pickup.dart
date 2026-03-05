@@ -6,6 +6,7 @@ import 'package:cyklze/screens/confirmed.dart';
 import 'package:cyklze/screens/verification.dart';
 import 'package:flutter/material.dart';
 import 'package:cyklze/Provider/pickup_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:cyklze/enums/page_state.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -17,16 +18,17 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 
 const String ORDER_URL =
-    'https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/order';
+    'https://api.cyklze.com/cyklzee/order';
 const String TOKEN_URL =
-    'https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/handletoken';
+    'https://api.cyklze.com/cyklzee/handletoken';
 
 class ModernConfirmPickupPage extends StatefulWidget {
   final String address;
-
+final File? image;
   const ModernConfirmPickupPage({
     super.key,
     required this.address,
+    required this.image,
   });
 
 
@@ -39,7 +41,7 @@ class _ModernConfirmPickupPageState extends State<ModernConfirmPickupPage>
   Pagestate _state = Pagestate.loggedIn;
   final pickupProvider = PickupProvider();
 
-final int _runCount = 0;
+ int _runCount = 0;
   @override
   void initState() {
     super.initState();
@@ -68,9 +70,9 @@ void confirmLogout(BuildContext context) {
       backgroundColor: const Color(0xFFF5F5F5),
       title: Semantics(
         label: 'Note',
-        child: const Text(
+        child:  Text(
           "Note",
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
             fontSize: 18,
             color: Color(0xFF1D4D61),
@@ -78,11 +80,16 @@ void confirmLogout(BuildContext context) {
         ),
       ),
       content: Semantics(
-        label: ' confirmation message',
-        child: const Text(
-          "Your Recent pickup scheduled is still pending, so a new one can't be scheduled yet. Please provide the pickup agent with complete and accurate details of all materials including this and  the existing pickup to ensure a smooth collection.",   style: TextStyle(fontSize: 14, color: Colors.black),
-        ),
-      ),
+  label: 'confirmation message',
+  child: Text(
+    "Your recent pickup is still pending. A new pickup cannot be scheduled. Instead, provide current and pending pickup details to the agent.",
+    style: GoogleFonts.poppins(
+      fontSize: 14,
+      color: Colors.black,
+      height: 1.3, // tighter spacing
+    ),
+  ),
+),
       actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       actionsAlignment: MainAxisAlignment.end,
       actions: [
@@ -134,6 +141,16 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
     return;
   }
     setState(() => _state = Pagestate.loading);
+String yesimage = 'no';
+   if (widget.image != null) {
+  try {
+    final bytes = await widget.image!.readAsBytes();
+    yesimage = base64Encode(bytes);
+  } catch (e) {
+    yesimage = 'no';
+  }
+}
+  
 
   try {
 
@@ -145,6 +162,7 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
       'type': pickupProvider.selectedType,
       'items': pickupProvider.selectedItems,
       'address': widget.address,
+      'image': yesimage
     });
 
     final response = await http
@@ -156,13 +174,20 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
           },
           body: orderPayload,
         )
-        .timeout(const Duration(seconds: 10));
+        .timeout(const Duration(seconds: 40));
 
  
     if (mounted) {
       if (response.statusCode == 200) {
    
-         final Map<String, dynamic> responseBody = jsonDecode(response.body);
+      Map<String, dynamic> responseBody = {};
+
+try {
+  responseBody = jsonDecode(response.body);
+} catch (e) {
+  setState(() => _state = Pagestate.error);
+  return;
+}
     final message = responseBody['message'];
     if(message.toString().toLowerCase().contains("pending")){
       confirmLogout(context);
@@ -177,21 +202,19 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
     }
     
    
-      } else if (response.statusCode == 401) {
+      } else{
          if (_runCount >= 2){
            setState(() => _state = Pagestate.error);
          }
          else{
-      final provider = PickupProvider();
+          _runCount++;
+     final provider = Provider.of<PickupProvider>(context, listen: false);
         Pagestate result =
             await provider.refreshAccessToken(fetchProfile, "exe");
         setState(() => _state = result);
          }
      
   
-      } else {
-    
-        setState(() => _state = Pagestate.error);
       }
     }
   } on TimeoutException {
@@ -306,10 +329,14 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
             Semantics(
               header: true,
               label: 'Confirm Pickup Heading',
-              child: const Text(
-                'Confirm Pickup',
-               
-              ),
+              child:  Text(
+  'Confirm Pickup',
+  style: GoogleFonts.poppins(
+    fontSize: 16,                 // adjust size as needed
+    fontWeight: FontWeight.w600,   // semi-bold for button
+    color: Colors.black,           // typical button text color
+  ),
+),
             ),
             const SizedBox(height: 12),
             Semantics(
@@ -348,7 +375,7 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
                       onPressed: () => Navigator.of(context).pop(),
                       child: Semantics(
                         label: 'close the pickup confirmation',
-                        child: const Text('close',style: TextStyle(color: Colors.black),),
+                        child:  Text('close',style: GoogleFonts.poppins(color: Colors.black),),
                       ),
                     ),
                   ),
@@ -377,7 +404,7 @@ Widget _summaryTile(String label, String value) {
             label: 'Label: $label',
             child: Text(
               label,
-              style: TextStyle(color: Colors.grey.shade700),
+              style: GoogleFonts.poppins(color: Colors.grey.shade700),
             ),
           ),
         ),
@@ -389,7 +416,7 @@ Widget _summaryTile(String label, String value) {
               message: value,
               child: Text(
                 value,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                style:  GoogleFonts.poppins(fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -426,13 +453,13 @@ Widget _pickupSummaryCard() {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
-                children: const [
+                children:  [
                   Icon(Icons.assignment_outlined,
                       size: 16, color: Color(0xFF1D4D61)),
                   SizedBox(width: 6),
                   Text(
                     'Pickup Summary',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1D4D61),
@@ -446,9 +473,9 @@ Widget _pickupSummaryCard() {
                   onPressed: () => _showOrderPreview(),
                   icon: const Icon(Icons.remove_red_eye_outlined,
                       color: Colors.white, size: 14),
-                  label: const Text(
+                  label:  Text(
                     'Preview',
-                    style: TextStyle(color: Colors.white, fontSize: 13),
+                    style: GoogleFonts.poppins(color: Colors.white, fontSize: 13),
                   ),
                   style: TextButton.styleFrom(
                     backgroundColor: const Color(0xFF1D4D61),
@@ -469,9 +496,9 @@ Widget _pickupSummaryCard() {
           const Divider(height: 12, thickness: 0.8, color: Color(0xFFE0E0E0)),
 
           // === Items Section ===
-          const Text(
+           Text(
             'Items',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               fontSize: 13.5,
               color: Colors.black87,
@@ -492,7 +519,7 @@ Widget _pickupSummaryCard() {
                           const VisualDensity(horizontal: -4, vertical: -4),
                       label: Text(
                         e,
-                        style: const TextStyle(
+                        style:  GoogleFonts.poppins(
                           color: Colors.black87,
                           fontSize: 12.5,
                         ),
@@ -500,11 +527,11 @@ Widget _pickupSummaryCard() {
                     );
                   }).toList()
                 : [
-                    const Chip(
+                     Chip(
                       label: Text(
                         'No items selected',
                         style:
-                            TextStyle(color: Colors.black54, fontSize: 12.5),
+                            GoogleFonts.poppins(color: Colors.black54, fontSize: 12.5),
                       ),
                       backgroundColor: Color(0xFFF5F7FA),
                     ),
@@ -515,9 +542,9 @@ Widget _pickupSummaryCard() {
           const Divider(height: 10, thickness: 0.8, color: Color(0xFFE0E0E0)),
 
           // === Pickup Details ===
-          const Text(
+           Text(
             'Pickup Details',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               fontSize: 13.5,
               color: Colors.black87,
@@ -532,7 +559,7 @@ Widget _pickupSummaryCard() {
               const SizedBox(width: 6),
               Text(
                 pickupProvider.selectedDate ?? '—',
-                style: const TextStyle(
+                style:  GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: Colors.black87,
@@ -549,7 +576,7 @@ Widget _pickupSummaryCard() {
               const SizedBox(width: 6),
               Text(
                 pickupProvider.selectedTimeRange ?? '—',
-                style: const TextStyle(
+                style:  GoogleFonts.poppins(
                   fontSize: 13,
                   color: Colors.black87,
                 ),
@@ -586,7 +613,7 @@ Widget _addressCard() {
               label: 'Address: ${widget.address}',
               child: Text(
                 widget.address,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                style:  GoogleFonts.poppins(fontWeight: FontWeight.w600),
                 softWrap: true, 
               ),
             ),
@@ -613,8 +640,8 @@ Widget _addressCard() {
             ),
           ),
         ),
-        title: const Text("Confirm Pickup",
-            style: TextStyle(color: Colors.white, fontSize: 16,
+        title:  Text("Confirm Pickup",
+            style: GoogleFonts.poppins(color: Colors.white, fontSize: 16,
                         fontWeight: FontWeight.w800)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -646,23 +673,27 @@ SingleChildScrollView(
       const SizedBox(height: 10),
 
       // === PICKUP ADDRESS HEADER ===
-      Text(
-        'Pickup Address',
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              fontSize: 15,
-              color: const Color(0xFF1D4D61),
-            ),
-      ),
+   Text(
+  'Pickup Address',
+  style: GoogleFonts.poppins(
+    textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w700,
+          fontSize: 15,
+          color: const Color(0xFF1D4D61),
+        ),
+  ),
+),
       const SizedBox(height: 3),
-      Text(
-        'This is the address selected for the pickup.',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey[700],
-              height: 1.2,
-              fontSize: 12.5,
-            ),
-      ),
+    Text(
+  'This is the address selected for the pickup.',
+  style: GoogleFonts.poppins(
+    textStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Colors.grey[700],
+          height: 1.2,
+          fontSize: 12.5,
+        ),
+  ),
+),
 
       const SizedBox(height: 8),
 
@@ -712,9 +743,9 @@ SingleChildScrollView(
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.check_circle_outline,
                       color: Colors.white, size: 18),
-                  label: const Text(
+                  label:  Text(
                     'Confirm Pickup',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -755,14 +786,16 @@ SingleChildScrollView(
               fit: BoxFit.cover,
             ),
             const SizedBox(height: 4),
-            Text(
-              'Everything looks great!',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[700],
-                    fontSize: 12.5,
-                  ),
-            ),
+           Text(
+  'Everything looks great!',
+  style: GoogleFonts.poppins(
+    textStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
+          fontWeight: FontWeight.w500,
+          color: Colors.grey[700],
+          fontSize: 12.5,
+        ),
+  ),
+),
           ],
         ),
       ),
@@ -775,4 +808,6 @@ SingleChildScrollView(
   );
 
 }
+
+
 }

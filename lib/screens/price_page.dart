@@ -33,7 +33,7 @@ class _PricePageState extends State<PricePage> {
   bool hasError = false;
 
   static const String base =
-      "https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee";
+      "https://api.cyklze.com/cyklzee";
   static const String productUrl = "$base/product";
 
   PageState _state = PageState.loggedIn;
@@ -80,11 +80,7 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
        setState(() => _state = PageState.offline);
     return;
   }
-//  if (!await hasInternetConnection()) {
-//   print("************* offline (no real internet)");
-//       setState(() => _state = PageState.offline);
-//   return;
-// }
+
 
 
     try {
@@ -235,96 +231,6 @@ Widget _mainContent() {
 
 
 
-// Widget _buildContent() {
-//   return SingleChildScrollView(
-//     child: Padding(
-//       padding: const EdgeInsets.all(8.0),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           const Text("General",  style: TextStyle(
-//                 color: Color(0xFF1D4D61),
-//                 fontWeight: FontWeight.bold,
-//                 fontSize: 20,
-//               ),),
-      
-//           ListView.separated(
-//             padding: const EdgeInsets.symmetric(horizontal: 8),
-//             itemCount: general.length + 1,
-//             separatorBuilder: (_, __) => const SizedBox(height: 6),
-//             shrinkWrap: true, // ✅ allows ListView to take only needed space
-//             physics: const NeverScrollableScrollPhysics(), // ✅ disable inner scroll
-//             itemBuilder: (context, index) {
-//               if (index == 0) {
-//                 return const SizedBox();
-//                 //  Padding(
-//                 //   padding: EdgeInsets.all(8.0),
-//                 //   child: Text(
-//                 //     "These are the prices we’re offering per kg for each type of scrap material you sell to us.",
-//                 //     style: TextStyle(
-//                 //       fontSize: 14,
-//                 //       fontWeight: FontWeight.w400,
-//                 //       color: Colors.black54,
-//                 //     ),
-//                 //     textAlign: TextAlign.left,
-//                 //   ),
-//                 // );
-//               }
-      
-//               final product = general[index - 1];
-//               return Container(
-//                 child: _buildProductCard(
-//                   product["name"],
-//                   product["price"],
-//                   product["category"],
-//                 ),
-//               );
-//             },
-//           ),
-      
-//           const SizedBox(height: 16),
-//           const Text("Metal" , style: TextStyle(
-//                 color: Color(0xFF1D4D61),
-//                 fontWeight: FontWeight.bold,
-//                 fontSize: 20,
-//               ),),
-      
-//           ListView.separated(
-//             padding: const EdgeInsets.symmetric(horizontal: 8),
-//             itemCount: metal.length + 1,
-//             separatorBuilder: (_, __) => const SizedBox(height: 6),
-//             shrinkWrap: true,
-//             physics: const NeverScrollableScrollPhysics(),
-//             itemBuilder: (context, index) {
-//               if (index == 0) {
-//                  return const SizedBox();
-//               }
-      
-//               final product = metal[index - 1];
-//               return Container(
-//                 child: _buildProductCard(
-//                   product["name"],
-//                   product["price"],
-//                   product["category"],
-//                 ),
-//               );
-//             },
-//           ),
-//         ],
-//       ),
-//     ),
-//   );
-// }
-
-// Widget _platform(String name, int price,String category) {
-// return Container(
-//   child: Column(children: [
-//     if (category == "General")
-//     _buildProductCard(name, price),
-    
-//   ],),
-// );
-// }
 
 
 
@@ -498,66 +404,6 @@ Widget _buildContent(List<Map<String, dynamic>> general, List<Map<String, dynami
   );
 }
 
-
-
-
-// Widget _buildProductCard(String name, String price , String cat) {
-//   return  Container(decoration: BoxDecoration(
-//   color: Colors.white,
-//   borderRadius: BorderRadius.circular(12),
-//   border: Border.all(color: Colors.transparent),
-// ),
-
-//     child: Padding(
-//     padding: const EdgeInsets.all(12),
-//     child: Row(
-//      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//      crossAxisAlignment: CrossAxisAlignment.start,
-//      children: [
-    
-//        Expanded(
-//          child: Text(
-//            name,
-//            textAlign: TextAlign.left,
-//            style: const TextStyle(
-//              fontSize: 16,
-//              fontWeight: FontWeight.w600,
-//              color: Colors.black,
-//            ),
-//            overflow: TextOverflow.ellipsis,
-//          ),
-//        ),
-            
-//        const SizedBox(width: 8),
-      
-//        Column(
-//          crossAxisAlignment: CrossAxisAlignment.end,
-//          children: [
-//            Text(
-//              price,
-//              style: const TextStyle(
-//                fontSize: 15,
-//                fontWeight: FontWeight.w700,
-//                color: Colors.black,
-//              ),
-//              textAlign: TextAlign.right,
-//            ),
-//           //  const SizedBox(height: 2),
-//           //  const Text(
-//           //    "Per kilogram",
-//           //    style: TextStyle(
-//           //      fontSize: 12,
-//           //      color: Colors.black54,
-//           //    ),
-//           //    textAlign: TextAlign.right,
-//           //  ),
-//          ],
-//        ),
-//      ],
-//             ),
-//     ),
-//   );
-// }
 
 
 

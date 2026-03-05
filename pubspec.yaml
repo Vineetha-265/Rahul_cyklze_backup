@@ -44,6 +44,11 @@ dependencies:
   another_flushbar: ^1.10.28
   webview_flutter: ^4.4.2
   connectivity_plus: ^6.1.0
+  dropdown_button2: 2.3.9
+  image_picker: ^1.1.2
+  permission_handler: ^12.0.1
+  google_fonts: ^6.3.0
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:
@@ -92,3 +97,5 @@ flutter:
   - assets/images/silver.jpg
   - assets/images/brass.jpg
   - assets/images/books.jpg
+  - assets/images/emoji.png
+  

@@ -1,56 +1,329 @@
-import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart';
 
-class FAQPage extends StatelessWidget {
+// class FAQPage extends StatelessWidget {
+//   const FAQPage({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final List<Map<String, String>> faqs = [
+//       {
+//         "question": "How does the app work?",
+//         "answer":
+//             "You can sell your scrap by placing an order on our app. Once the order is placed, our team will come to pick it up and pay you on-site."
+//       },
+//       {
+//         "question": "What types of scrap can I sell?",
+//         "answer":
+//             "We accept various types of scrap including metals, paper, plastic, and electronics. If you're unsure, contact us for more details."
+//       },
+//       {
+//         "question": "How do I get paid for my scrap?",
+//         "answer":
+//             "The scrap will be weighed on-site, and the amount payable will be based on the actual weight and the locked price per kilogram from the day of booking. The final payment is completed on-site at the time of pickup."
+//       },
+//       {
+//         "question": "How do I place an order for pickup?",
+//         "answer":
+//             "Simply open the app, select Pickup type, fill in the details about the scrap you're selling, and confirm the pickup time and enter the address."
+//       },
+//       {
+//         "question": "Can I schedule a pickup at any date?",
+//         "answer":
+//             "You can schedule a pickup at your convenience. Our team operates during normal business hours, but we do offer flexible scheduling based on availability."
+//       },
+//       {
+//         "question": "What happens if I change my mind after placing an order?",
+//         "answer":
+//             "You can cancel your pickup order through the app before our team arrives. If the pickup is already in progress, please contact customer support."
+//       },
+//       {
+//         "question": "How do I contact customer support?",
+//         "answer":
+//             "You can contact our customer support team directly through the app or by emailing at support@cyklze.com."
+//       },
+//       {
+//         "question": "Are there any hidden charges?",
+//         "answer":
+//             "No, there are no hidden charges. You will receive the payment based on the current prices for the scrap you provide, and there are no extra fees for the pickup service."
+//       },
+//     ];
+
+//     return Scaffold(
+//       backgroundColor: Colors.grey.shade100,
+//       appBar:      AppBar(
+//         flexibleSpace: Container(
+//           decoration: const BoxDecoration(
+//             gradient: LinearGradient(
+//               colors: [Color(0xFF1D4D61), Color(0xFF163B4B)],
+//               begin: Alignment.topLeft,
+//               end: Alignment.bottomRight,
+//             ),
+//           ),
+//         ),
+//         title: const Text("FAQs",
+//             style: TextStyle(color: Colors.white,   fontSize: 16,
+//                         fontWeight: FontWeight.w800)),
+//         leading: IconButton(
+//           icon: const Icon(Icons.arrow_back, color: Colors.white),
+//           onPressed: () => Navigator.pop(context),
+//         ),
+//         elevation: 0,
+//       ),
+//       body: ListView.builder(
+//         padding: const EdgeInsets.all(16),
+//         itemCount: faqs.length,
+//         itemBuilder: (context, index) {
+//           final faq = faqs[index];
+//           return AnimatedFAQCard(
+//             question: faq["question"]!,
+//             answer: faq["answer"]!,
+//             icon: Icons.help_outline_rounded,
+//             color: Colors.green.shade400,
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }
+
+// class AnimatedFAQCard extends StatefulWidget {
+//   final String question;
+//   final String answer;
+//   final IconData icon;
+//   final Color color;
+
+//   const AnimatedFAQCard({
+//     super.key,
+//     required this.question,
+//     required this.answer,
+//     required this.icon,
+//     required this.color,
+//   });
+
+//   @override
+//   State<AnimatedFAQCard> createState() => _AnimatedFAQCardState();
+// }
+
+// class _AnimatedFAQCardState extends State<AnimatedFAQCard>
+//     with SingleTickerProviderStateMixin {
+//   bool _isExpanded = false;
+//   late final AnimationController _controller;
+//   late final Animation<double> _expandAnimation;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _controller = AnimationController(
+//       vsync: this,
+//       duration: const Duration(milliseconds: 300),
+//     );
+//     _expandAnimation = CurvedAnimation(
+//       parent: _controller,
+//       curve: Curves.easeInOut,
+//     );
+//   }
+
+//   @override
+//   void dispose() {
+//     _controller.dispose();
+//     super.dispose();
+//   }
+
+//   void _toggle() {
+//     setState(() {
+//       _isExpanded = !_isExpanded;
+//       if (_isExpanded) {
+//         _controller.forward();
+//       } else {
+//         _controller.reverse();
+//       }
+//     });
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Semantics(
+//       container: true,
+//       label: 'Expandable FAQ item. Tap to ${_isExpanded ? 'collapse' : 'expand'} the answer.',
+//       child: Padding(
+//         padding: const EdgeInsets.only(bottom: 14),
+//         child: Material(
+//           color: Colors.transparent,
+//           child: InkWell(
+//             borderRadius: BorderRadius.circular(20),
+//             onTap: _toggle,
+//             splashColor: widget.color.withOpacity(0.1),
+//             highlightColor: Colors.transparent,
+//             child: AnimatedContainer(
+//               duration: const Duration(milliseconds: 300),
+//               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+//               decoration: BoxDecoration(
+//                 color: _isExpanded ? Colors.white : Colors.white,
+//                 borderRadius: BorderRadius.circular(20),
+//                 boxShadow: [
+//                   BoxShadow(
+//                     color: Colors.black.withOpacity(0.15),
+//                     blurRadius: 16,
+//                     offset: const Offset(0, 8),
+//                   ),
+//                 ],
+//               ),
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Row(
+//                     children: [
+//                       Icon(
+//                         widget.icon,
+//                         color:  const Color(0xFF1D4D61),
+//                         size: 35,
+//                         semanticLabel: 'Question icon',
+//                       ),
+//                       const SizedBox(width: 12),
+//                       Expanded(
+//                         child: Text(
+//                           widget.question,
+//                           style: const TextStyle(
+//                                 fontWeight: FontWeight.w600,
+//                                 color: Colors.black87,
+//                               ),
+//                         ),
+//                       ),
+//                       RotationTransition(
+//                         turns: Tween(begin: 0.0, end: 0.5).animate(_controller),
+//                         child: Icon(
+//                           Icons.keyboard_arrow_down_rounded,
+//                           color: const Color(0xFF1D4D61),
+//                           size: 28,
+//                           semanticLabel: _isExpanded
+//                               ? 'Collapse answer'
+//                               : 'Expand to see answer',
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+
+//                   SizeTransition(
+//                     sizeFactor: _expandAnimation,
+//                     axisAlignment: -1.0,
+//                     child: Padding(
+//                       padding: const EdgeInsets.only(top: 14),
+//                       child: Semantics(
+//                         label: _isExpanded ? 'Answer is visible' : 'Answer is hidden',
+//                         child: Text(
+//                           widget.answer,
+//                           style: const TextStyle(
+//                                 color: Colors.black,
+//                                 height: 1.5,
+//                               ),
+//                         ),
+//                       ),
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+import 'dart:convert';
+import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:cyklze/Provider/pickup_provider.dart';
+import 'package:cyklze/Views/error.dart';
+import 'package:cyklze/Views/offline.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+
+enum PageState { loggedIn, offline, error }
+
+class FAQPage extends StatefulWidget {
   const FAQPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, String>> faqs = [
-      {
-        "question": "How does the app work?",
-        "answer":
-            "You can sell your scrap by placing an order on our app. Once the order is placed, our team will come to pick it up and pay you on-site."
-      },
-      {
-        "question": "What types of scrap can I sell?",
-        "answer":
-            "We accept various types of scrap including metals, paper, plastic, and electronics. If you're unsure, contact us for more details."
-      },
-      {
-        "question": "How do I get paid for my scrap?",
-        "answer":
-            "The scrap will be weighed on-site, and the amount payable will be based on the actual weight and the locked price per kilogram from the day of booking. The final payment is completed on-site at the time of pickup."
-      },
-      {
-        "question": "How do I place an order for pickup?",
-        "answer":
-            "Simply open the app, select Pickup type, fill in the details about the scrap you're selling, and confirm the pickup time and enter the address."
-      },
-      {
-        "question": "Can I schedule a pickup at any date?",
-        "answer":
-            "You can schedule a pickup at your convenience. Our team operates during normal business hours, but we do offer flexible scheduling based on availability."
-      },
-      {
-        "question": "What happens if I change my mind after placing an order?",
-        "answer":
-            "You can cancel your pickup order through the app before our team arrives. If the pickup is already in progress, please contact customer support."
-      },
-      {
-        "question": "How do I contact customer support?",
-        "answer":
-            "You can contact our customer support team directly through the app or by emailing at support@cyklze.com."
-      },
-      {
-        "question": "Are there any hidden charges?",
-        "answer":
-            "No, there are no hidden charges. You will receive the payment based on the current prices for the scrap you provide, and there are no extra fees for the pickup service."
-      },
-    ];
+  State<FAQPage> createState() => _FAQPageState();
+}
 
+class _FAQPageState extends State<FAQPage> {
+  List<Map<String, dynamic>> faqs = [];
+  bool isLoading = true;
+  bool hasError = false;
+
+  static const String base =
+      "https://api.cyklze.com/cyklzee";
+  static const String faqUrl = "$base/faqs";
+
+  PageState _state = PageState.loggedIn;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchFAQs();
+    });
+  }
+
+  Future<void> fetchFAQs() async {
+    setState(() {
+      _state = PageState.loggedIn;
+      isLoading = true;
+      hasError = false;
+    });
+
+    final provider = Provider.of<PickupProvider>(context, listen: false);
+
+    if (!await provider.hasInternetConnection()) {
+      setState(() => _state = PageState.offline);
+      return;
+    }
+
+    try {
+      final res = await http.get(Uri.parse(faqUrl));
+
+      if (res.statusCode == 200) {
+        final body = res.body.trim();
+        List<dynamic> jsonData;
+
+        if (body.startsWith("[")) {
+          jsonData = jsonDecode(body);
+        } else {
+          final obj = jsonDecode(body);
+          jsonData = obj['items'] ?? obj['data'] ?? [];
+        }
+
+        setState(() {
+          faqs = jsonData
+              .map((e) => {
+                    "question": e['question'] ?? '',
+                    "answer": e['answer'] ?? '',
+                  })
+              .toList();
+
+          isLoading = false;
+        });
+      } else {
+        setState(() => _state = PageState.error);
+      }
+    } catch (e) {
+      setState(() {
+        _state = PageState.loggedIn;
+        isLoading = false;
+        hasError = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      appBar:      AppBar(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -60,174 +333,118 @@ class FAQPage extends StatelessWidget {
             ),
           ),
         ),
-        title: const Text("FAQs",
-            style: TextStyle(color: Colors.white,   fontSize: 16,
-                        fontWeight: FontWeight.w800)),
+        title:  Text(
+          "FAQs",
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         elevation: 0,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: faqs.length,
-        itemBuilder: (context, index) {
-          final faq = faqs[index];
-          return AnimatedFAQCard(
-            question: faq["question"]!,
-            answer: faq["answer"]!,
-            icon: Icons.help_outline_rounded,
-            color: Colors.green.shade400,
-          );
-        },
-      ),
-    );
-  }
-}
-
-class AnimatedFAQCard extends StatefulWidget {
-  final String question;
-  final String answer;
-  final IconData icon;
-  final Color color;
-
-  const AnimatedFAQCard({
-    super.key,
-    required this.question,
-    required this.answer,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  State<AnimatedFAQCard> createState() => _AnimatedFAQCardState();
-}
-
-class _AnimatedFAQCardState extends State<AnimatedFAQCard>
-    with SingleTickerProviderStateMixin {
-  bool _isExpanded = false;
-  late final AnimationController _controller;
-  late final Animation<double> _expandAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _expandAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
+      body: _buildByState(),
     );
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  Widget _buildByState() {
+    switch (_state) {
+      case PageState.loggedIn:
+        return _mainContent();
+      case PageState.error:
+        return ErrorRetry(
+          message: "Something went wrong",
+          onRetry: fetchFAQs,
+        );
+      case PageState.offline:
+        return OfflineRetry(
+          onRetry: fetchFAQs,
+        );
+    }
   }
 
-  void _toggle() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-      if (_isExpanded) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
-    });
+  Widget _mainContent() {
+    return RefreshIndicator(
+      onRefresh: fetchFAQs,
+      child: isLoading
+          ? _buildLoading()
+          : hasError
+              ? ErrorRetry(
+                  message: "Something went wrong",
+                  onRetry: fetchFAQs,
+                )
+              : _buildContent(),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      container: true,
-      label: 'Expandable FAQ item. Tap to ${_isExpanded ? 'collapse' : 'expand'} the answer.',
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 14),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: _toggle,
-            splashColor: widget.color.withOpacity(0.1),
-            highlightColor: Colors.transparent,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              decoration: BoxDecoration(
-                color: _isExpanded ? Colors.white : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+  Widget _buildLoading() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: 6,
+      itemBuilder: (context, index) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          height: 80,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade300,
+            borderRadius: BorderRadius.circular(12),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContent() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: faqs.length,
+      itemBuilder: (context, index) {
+        final item = faqs[index];
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8F9FA),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE0E0E0)),
+          ),
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent,
+            ),
+            child: ExpansionTile(
+              tilePadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              childrenPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              title: Text(
+                item["question"],
+                style:  GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: Color(0xFF1D4D61),
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        widget.icon,
-                        color:  const Color(0xFF1D4D61),
-                        size: 35,
-                        semanticLabel: 'Question icon',
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          widget.question,
-                          style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                        ),
-                      ),
-                      RotationTransition(
-                        turns: Tween(begin: 0.0, end: 0.5).animate(_controller),
-                        child: Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: const Color(0xFF1D4D61),
-                          size: 28,
-                          semanticLabel: _isExpanded
-                              ? 'Collapse answer'
-                              : 'Expand to see answer',
-                        ),
-                      ),
-                    ],
+              iconColor: const Color(0xFF1D4D61),
+              collapsedIconColor: Colors.grey,
+              children: [
+                Text(
+                  item["answer"],
+                  style:  GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: Colors.black87,
+                    height: 1.4,
                   ),
-
-                  SizeTransition(
-                    sizeFactor: _expandAnimation,
-                    axisAlignment: -1.0,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 14),
-                      child: Semantics(
-                        label: _isExpanded ? 'Answer is visible' : 'Answer is hidden',
-                        child: Text(
-                          widget.answer,
-                          style: const TextStyle(
-                                color: Colors.black,
-                                height: 1.5,
-                              ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
-
-

@@ -34,6 +34,9 @@
 
 
 import 'package:cyklze/Provider/pickup_provider.dart';
+import 'package:cyklze/screens/test.dart';
+import 'package:cyklze/screens/updated_date.dart';
+import 'package:cyklze/screens/upload.dart';
 import 'package:flutter/material.dart';
 import 'package:cyklze/screens/home_page.dart';
 import 'package:provider/provider.dart';
@@ -65,7 +68,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1D4D61)),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: const
+    //  PickupDateTimeSelector(names: [],)
+   //  ImageUploadPage()
+     //  PricesPage()
+       HomePage(),
     );
   }
 }

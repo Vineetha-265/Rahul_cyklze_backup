@@ -1,6 +1,8 @@
 import 'package:cyklze/screens/general_pickup.dart';
 import 'package:cyklze/screens/home_page.dart';
+import 'package:cyklze/screens/test.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class HalloweenCard extends StatelessWidget {
   const HalloweenCard({super.key});
@@ -11,7 +13,7 @@ Widget build(BuildContext context) {
     onTap: () {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const GeneralPickupPage()),
+        MaterialPageRoute(builder: (_) => const PricesPage()),
       );
     },
     child: Container(
@@ -42,9 +44,9 @@ Widget build(BuildContext context) {
           const SizedBox(height: 6), // tighter spacing
 
           // Title text
-          const Text(
+           Text(
             "Let's setup your scrap pickup",
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: Colors.grey,
               fontWeight: FontWeight.w700,
               fontSize: 17, // smaller font
@@ -64,11 +66,11 @@ Widget build(BuildContext context) {
                   color:  Colors.green[800],
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Padding(
+                child:  Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5), // tighter padding
                   child: Text(
                     "Schedule",
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 14, // smaller font
                       fontWeight: FontWeight.w600,

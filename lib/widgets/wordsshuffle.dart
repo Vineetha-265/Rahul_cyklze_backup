@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ShufflingWordsWidget extends StatefulWidget {
   const ShufflingWordsWidget({super.key});
@@ -10,8 +11,19 @@ class ShufflingWordsWidget extends StatefulWidget {
   _ShufflingWordsWidgetState createState() => _ShufflingWordsWidgetState();
 }
 
-class _ShufflingWordsWidgetState extends State<ShufflingWordsWidget> {
-  final List<String> words = ['plastic', 'paper', 'Iron', 'books', 'carton', 'bottle','Ac','fridge','copper','silver','wire','ewaste'];
+class _ShufflingWordsWidgetState extends State<ShufflingWordsWidget> {final List<String> words = [
+  'Plastic',
+  'Paper',
+  'Iron',
+  'Books',
+  'Carton',
+  'AC',
+  'Fridge',
+  'Copper',
+  'Silver',
+  'Wire',
+  'E-Waste',
+];
   String displayedWord = '';
   late Timer _timer;
 
@@ -45,12 +57,12 @@ class _ShufflingWordsWidgetState extends State<ShufflingWordsWidget> {
         children: [
           Text(
             'What we buy?',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,color: Color(0xFF1D4D61)),
+            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold,color: Color(0xFF1D4D61)),
           ),
           SizedBox(height: 2),
           Text(
             displayedWord,
-            style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
           ),
         ],
       ),

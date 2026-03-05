@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:cyklze/Provider/pickup_provider.dart';
 import 'package:cyklze/SecureStorage/securestorage.dart';
 import 'package:cyklze/Views/error.dart';
@@ -8,27 +9,33 @@ import 'package:cyklze/Views/loginrequird.dart';
 import 'package:cyklze/Views/offline.dart';
 import 'package:cyklze/screens/confirm_pickup.dart';
 import 'package:cyklze/screens/verification.dart';
+import 'package:cyklze/widgets/date_time.dart';
+import 'package:cyklze/widgets/searchaddress.dart';
 import 'package:cyklze/widgets/time_chip.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:cyklze/enums/page_state.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 const String _tokenUrl =
-    "https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/handletoken";
+    "https://api.cyklze.com/cyklzee/handletoken";
 
 class CreativeAddressPage extends StatefulWidget {
   final String selectedTimeRange;
   final String selectedDate;
   final String selectedType;
+    final File? image;
   final List<String> selectedItems;
 
   const CreativeAddressPage({
     super.key,
     required this.selectedTimeRange,
     required this.selectedDate,
+     required this.image,
     required this.selectedType,
     required this.selectedItems,
   });
@@ -46,13 +53,22 @@ class _CreativeAddressPageState extends State<CreativeAddressPage>
 Pagestate _state = Pagestate.loading;
   String _selectedCity = 'Hyderabad';
   String? _savedAddress;
+  List<String> cities = [];
+  String? selectedLocality;
+  String? selectedCty;
+    String? regx;
+  List<String> areas = [];
+   List<PostalCodeRange> postalRanges = [
+];
+
   bool _verifyingPostal = false;
   String? _postalCheckResult;
-final int _runCount = 0;
+ int _runCount = 0;
 //version control
   @override
   void initState() {
     super.initState();
+
     _loadSavedAddress();
     _checkTokenExpiration();
   }
@@ -75,13 +91,13 @@ final int _runCount = 0;
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style: const TextStyle(
+              style:  GoogleFonts.poppins(
                   fontSize: 16,
                         fontWeight: FontWeight.w800, color: Colors.black)),
           if (subtitle != null) ...[
           
             Text(subtitle,
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
     color: Colors.grey[600],      
     fontWeight: FontWeight.w400,   
     height: 1.3,                   
@@ -196,6 +212,11 @@ final today = DateTime(now.year, now.month, now.day);
 
   Future<void> _loadSavedAddress() async {
     final a = await SecureStorage.getAddress();
+    areas = await SecureStorage.getAreas();
+    cities = await SecureStorage.getCities();
+    postalRanges = await SecureStorage.getPostalRange();
+    
+    regx = await SecureStorage.getRegx();
     setState(() => _savedAddress = a);
   }
 
@@ -225,6 +246,7 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
       setState(() => _state = Pagestate.loggedIn);
       return;
     }  else {
+      _runCount++;
         if (_runCount >= 2){
 setState(() => _state = Pagestate.error);
         }else{
@@ -261,11 +283,14 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
   await Future.delayed(const Duration(milliseconds: 500));
 
   final pin = int.parse(postal);
-  final isHyderabad = postal.startsWith('500') && pin >= 500001 && pin <= 500099;
+  // final isHyderabad = postal.startsWith('500') && pin >= 500001 && pin <= 500099;
+     final isHyderabad = postalRanges.any(
+      (range) => range.contains(pin),
+    );
 
   if (isHyderabad) {
     setState(() {
-      _postalCheckResult = 'Hyderabad / Secunderabad — Serviceable';
+      _postalCheckResult = 'Serviceable';
     });
   } else {
     setState(() {
@@ -282,7 +307,7 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
     final street = _streetController.text.trim();
     final area = _areaController.text.trim();
     final postal = _postalController.text.trim();
-  final validAddressRegex = RegExp(r"^[a-zA-Z0-9\s\-,./]{3,50}$");
+  final validAddressRegex = RegExp(regx!);
     // if (street.isEmpty || area.isEmpty) {
     //   _showSnack('Please enter complete address');
     //   return;
@@ -293,6 +318,7 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
     _showSnack('Invalid street address.');
     return;
   }
+ 
 
   if (!validAddressRegex.hasMatch(area)) {
     _showSnack('Invalid area name.');
@@ -310,8 +336,16 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
       _showSnack('We don\'t serve this postal code');
       return;
     }
+      if (selectedLocality == null) {
+    _showSnack('Select a Locality');
+    return;
+  }
+      if (selectedCty == null) {
+    _showSnack('Select a City');
+    return;
+  }
 
-    final full = '$street, $area, $_selectedCity, $postal';
+    final full = '$street, $area, $selectedLocality, $selectedCty, $postal';
     await SecureStorage.saveAddress(full);
 
     if (!mounted) return;
@@ -321,6 +355,7 @@ Navigator.of(context).push(
   MaterialPageRoute(
     builder: (_) => ModernConfirmPickupPage(
       address: full,
+      image: widget.image,
     ),
   ),
 );
@@ -336,6 +371,7 @@ Navigator.of(context).push(
       // selectedDate: pickupProvider.getSelectedDate ?? "",
       // selectedType: pickupProvider.getSelectedType ?? "",
       // selectedItems: pickupProvider.getSelectedItems ?? [],
+      image: widget.image,
       address: _savedAddress ?? "",
     ),
   ),
@@ -361,8 +397,8 @@ Navigator.of(context).push(
             ),
           ),
         ),
-        title: const Text("Address",
-            style: TextStyle(color: Colors.white,   fontSize: 16,
+        title:  Text("Address",
+            style: GoogleFonts.poppins(color: Colors.white,   fontSize: 16,
                         fontWeight: FontWeight.w800)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -454,9 +490,9 @@ Future<void> showPickupDetailsPopup({
                         children: [
                           const Icon(Icons.calendar_today_outlined, size: 18, color: Colors.black54),
                           const SizedBox(width: 8),
-                          const Text(
+                           Text(
                             'Pickup details',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
                           ),
                           // const Spacer(),
                           // Tooltip(
@@ -484,9 +520,9 @@ Future<void> showPickupDetailsPopup({
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: Row(
                           children: [
-                            const SizedBox(
+                             SizedBox(
                                 width: 100,
-                                child: Text('Type', style: TextStyle(color: Colors.black54))),
+                                child: Text('Type', style: GoogleFonts.poppins(color: Colors.black54))),
                             Expanded(
                                 child: Text(selectedType.isNotEmpty ? selectedType : '—')),
                           ],
@@ -501,9 +537,9 @@ Future<void> showPickupDetailsPopup({
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: Row(
                           children: [
-                            const SizedBox(
+                             SizedBox(
                                 width: 100,
-                                child: Text('Date', style: TextStyle(color: Colors.black54))),
+                                child: Text('Date', style: GoogleFonts.poppins(color: Colors.black54))),
                             Expanded(
                                 child: Text(selectedDate.isNotEmpty ? selectedDate : '—')),
                           ],
@@ -518,9 +554,9 @@ Future<void> showPickupDetailsPopup({
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: Row(
                           children: [
-                            const SizedBox(
+                             SizedBox(
                                 width: 100,
-                                child: Text('Time', style: TextStyle(color: Colors.black54))),
+                                child: Text('Time', style: GoogleFonts.poppins(color: Colors.black54))),
                             Expanded(
                                 child: Text(
                                     selectedTimeRange.isNotEmpty ? selectedTimeRange : '—')),
@@ -530,7 +566,7 @@ Future<void> showPickupDetailsPopup({
                     ),
               
                     const SizedBox(height: 8),
-                    const Text('Items', style: TextStyle(color: Colors.black54)),
+                     Text('Items', style: GoogleFonts.poppins(color: Colors.black54)),
                     const SizedBox(height: 6),
               
                     // Items Chips
@@ -573,11 +609,11 @@ Widget _mainContent() {
           width: double.infinity,
           child: ElevatedButton.icon(
             icon: const Icon(Icons.local_shipping_outlined, color: Colors.white, size: 18),
-            label: const Padding(
+            label:  Padding(
               padding: EdgeInsets.symmetric(vertical: 10),
               child: Text(
                 'Show Pickup Details',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -625,7 +661,7 @@ Widget _mainContent() {
           const SizedBox(height: 6),
           Text(
             'Continue with the saved address',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: Colors.grey[600],
               fontSize: 12.5,
               height: 1.2,
@@ -652,7 +688,7 @@ Widget _mainContent() {
                     Expanded(
                       child: Text(
                         _savedAddress!,
-                        style: const TextStyle(
+                        style:  GoogleFonts.poppins(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w500,
                           color: Colors.black87,
@@ -668,12 +704,71 @@ Widget _mainContent() {
         ],
 
         const SizedBox(height: 10),
+       
+// DropdownButtonFormField<String>(
+//   value: selectedLocality,
+//   icon: const Icon(
+//     Icons.keyboard_arrow_down_rounded,
+//     color: Colors.black87,
+//   ),
+//   decoration: InputDecoration(
+//     labelText: 'Select Locality',
+//     labelStyle: const TextStyle(
+//       fontSize: 17,
+//       color: Colors.black,
+//     ),
+//     filled: true,
+//     fillColor: Colors.white,
+//     contentPadding: const EdgeInsets.symmetric(
+//       horizontal: 16,
+//       vertical: 14,
+//     ),
+//     border: OutlineInputBorder(
+//       borderRadius: BorderRadius.circular(14),
+      
+//       borderSide: BorderSide.none,
+//     ),
+//     enabledBorder: OutlineInputBorder(
+//       borderRadius: BorderRadius.circular(14),
+//       borderSide: BorderSide(
+//         color: Colors.grey.shade300,
+//       ),
+//     ),
+//     focusedBorder: OutlineInputBorder(
+//       borderRadius: BorderRadius.circular(14),
+//       borderSide: const BorderSide(
+//         color: Colors.black,
+//         width: 1.5,
+//       ),
+//     ),
+//   ),
+//   dropdownColor: Colors.white,
+//   borderRadius: BorderRadius.circular(14),
+//   items: areas.map((area) {
+//     return DropdownMenuItem<String>(
+//       value: area,
+      
+//       child: Text(
+//         area,
+//         style: const TextStyle(
+//           fontSize: 14,
+//           color: Colors.black87,
+//         ),
+//       ),
+//     );
+//   }).toList(),
+//   onChanged: (value) {
+//     setState(() {
+//       selectedLocality = value;
+//     });
+//   },
+// ),
 
         // === Enter New Address Section ===
         _buildSectionTitle('Enter New Address'),
         Text(
           'Enter a new address for the current pickup',
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             color: Colors.grey[600],
             fontWeight: FontWeight.w400,
             fontSize: 12.5,
@@ -720,9 +815,9 @@ Widget _mainContent() {
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
-                      : const Text(
+                      :  Text(
                           'Verify',
-                          style: TextStyle(fontSize: 13, color: Colors.white),
+                          style: GoogleFonts.poppins(fontSize: 13, color: Colors.white),
                         ),
                 ),
               ),
@@ -731,41 +826,97 @@ Widget _mainContent() {
         ),
 
         const SizedBox(height: 10),
+        //   const Text(
+        //   'Select Locality',
+        //   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        // ),
+  //       _searchableDropdown(context,areas,selectedLocality),
 
+
+  // const SizedBox(height: 10),
+  //   const Text(
+  //         'Select City',
+  //         style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+  //       ),
+//      AnimatedPadding(
+//   duration: const Duration(milliseconds: 250),
+//   curve: Curves.easeOut,
+//   padding: EdgeInsets.only(
+//     bottom: MediaQuery.of(context).viewInsets.bottom,
+//   ),
+//   child:   _searchableDropdown(context,cities,selectedCty),
+// ),
+        _popupDropdown(
+  context,
+  areas,
+  selectedLocality,
+  "Locality",
+  (value) {
+    setState(() {
+      selectedLocality = value;
+    });
+  },
+),
+       
+       
+          const SizedBox(height: 10),
+              _popupDropdown(
+  context,
+  cities,
+  selectedCty,
+  "City",
+  (value) {
+    setState(() {
+      selectedCty = value;
+    });
+  },
+),
+       
         // === City Dropdown ===
-        const Text(
-          'Select City',
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 4),
-        Container(
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade400, width: 0.8),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _selectedCity,
-              isExpanded: true,
-              icon: const Icon(Icons.arrow_drop_down),
-              style: const TextStyle(fontSize: 13, color: Colors.black87),
-              items: const [
-                DropdownMenuItem(
-                  value: 'Hyderabad',
-                  child: Text('Hyderabad'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedCity = value!;
-                });
-              },
-            ),
-          ),
-        ),
+        //  Text(
+        //   'Select City',
+        //   style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+        // ),
+        // const SizedBox(height: 4),
+        // Container(
+        //   height: 48,
+        //   padding: const EdgeInsets.symmetric(horizontal: 10),
+        //   decoration: BoxDecoration(
+        //     color: Colors.white,
+        //     borderRadius: BorderRadius.circular(8),
+        //     border: Border.all(color: Colors.grey.shade400, width: 0.8),
+        //   ),
+        //   child: DropdownButtonHideUnderline(
+        //     child: DropdownButton<String>(
+        //       value: _selectedCity,
+        //       isExpanded: true,
+        //       icon: const Icon(Icons.arrow_drop_down),
+        //       style: const TextStyle(fontSize: 13, color: Colors.black87),
+        //       items: const [
+        //         DropdownMenuItem(
+        //           value: 'Hyderabad',
+        //           child: Text('Hyderabad'),
+        //         ),
+        //       ],
+        //       onChanged: (value) {
+        //         setState(() {
+        //           _selectedCity = value!;
+        //         });
+        //       },
+        //     ),
+        //   ),
+        // ),
+          // if (widget.image != null)
+          //       ClipRRect(
+          //         borderRadius:
+          //             BorderRadius.circular(14),
+          //         child: Image.file(
+          //           widget.image!,
+          //           width: 100,
+          //           height: 100,
+          //           fit: BoxFit.cover,
+          //         ),
+          //       ),
 
         if (_postalCheckResult != null) ...[
           const SizedBox(height: 8),
@@ -814,10 +965,10 @@ Widget _mainContent() {
                   ),
                 ],
               ),
-              child: const Center(
+              child:  Center(
                 child: Text(
                   'Confirm Address',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
@@ -829,13 +980,459 @@ Widget _mainContent() {
         ),
 
         const SizedBox(height: 28),
+         const SizedBox(height: 200),
       ],
+    ),
+  );
+}
+
+Widget _searchableDropdown(
+  BuildContext context,
+  List<String> list,
+  String? val,
+) {
+  final TextEditingController searchController = TextEditingController();
+
+  return DropdownButtonFormField2<String>(
+    value: val,
+    isExpanded: true,
+
+    iconStyleData: const IconStyleData(
+      icon:  Icon(Icons.arrow_drop_down,color: Colors.black,),
+    ),
+
+    decoration: InputDecoration(
+      labelText: 'Select Locality',
+      labelStyle:  GoogleFonts.poppins(
+        fontSize: 14,
+        color: Colors.black,
+       
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Colors.black, width: 1.5),
+      ),
+    ),
+
+    dropdownStyleData: DropdownStyleData(
+      maxHeight: 500,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+      ),
+
+      // /// 👇 THIS pushes dropdown above keyboard
+      // padding: EdgeInsets.only(
+      //   bottom: MediaQuery.of(context).viewInsets.bottom,
+      // ),
+    ),
+
+    menuItemStyleData: const MenuItemStyleData(
+      height: 50,
+      padding: EdgeInsets.symmetric(horizontal: 14),
+    ),
+
+    items: list
+        .map(
+          (area) => DropdownMenuItem<String>(
+            value: area,
+            child: Text(
+              area,
+              style:  GoogleFonts.poppins(
+                fontSize: 15,
+                color: Colors.black87,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        )
+        .toList(),
+
+    /// 🔍 SEARCH
+    dropdownSearchData: DropdownSearchData(
+      searchController: searchController,
+      searchInnerWidgetHeight: 60,
+
+      searchInnerWidget: Padding(
+        padding: const EdgeInsets.all(8),
+        child: TextField(
+          controller: searchController,
+          autofocus: true, // 👈 VERY IMPORTANT
+          decoration: InputDecoration(
+            hintText: 'Search locality...',
+            prefixIcon: const Icon(Icons.search),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+      ),
+
+      searchMatchFn: (item, searchValue) {
+        return item.value!
+            .toLowerCase()
+            .contains(searchValue.toLowerCase());
+      },
+    ),
+
+    onChanged: (value) {
+      setState(() {
+        val = value;
+      });
+    },
+
+    onMenuStateChange: (isOpen) {
+      if (!isOpen) {
+        searchController.clear();
+      }
+    },
+  );
+}
+
+
+
+void _openSearchPopup(
+  BuildContext context,
+  List<String> list,
+  Function(String) onSelected,
+) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true, // ⭐ THIS IS CRITICAL
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+    ),
+    builder: (context) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag handle
+          const SizedBox(height: 8),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade400,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children:  [
+                Text(
+                  "Search",
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+          const Divider(height: 1),
+
+          // Content
+          Expanded(
+            child: SearchPopupContent(
+              list: list,
+              onSelected: onSelected,
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+
+
+
+
+
+// void _openSearchPopup(
+//   BuildContext context,
+//   List<String> list,
+//   Function(String) onSelected,
+// ) {
+//   showModalBottomSheet(
+//     context: context,
+//     isScrollControlled: true,
+//     shape: const RoundedRectangleBorder(
+//       borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+//     ),
+//     builder: (context) {
+//       return Scaffold(
+//   extendBodyBehindAppBar: false, // important
+//   appBar: AppBar(
+//     title: const Text("Search"),
+//   ),
+//   body: SafeArea(
+//     top: true,
+//     child: SearchPopupContent(
+//       list: list,
+//       onSelected: onSelected,
+//     ),
+//   ),
+// );
+
+
+//     },
+//   );
+// }
+
+
+Widget _popupDropdown(
+  BuildContext context,
+  List<String> list,
+  String? selectedValue,
+  String name,
+
+  Function(String) onSelected,
+) {
+  return InkWell(
+    onTap: () => _openSearchPopup(context, list, onSelected),
+    child: InputDecorator(
+      decoration: InputDecoration(
+        labelText: "Select $name",
+        labelStyle:  GoogleFonts.poppins(fontSize: 17, color: Colors.black,fontWeight: FontWeight.bold),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            selectedValue ?? "Select $name",
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              color:
+                  selectedValue == null ? Colors.grey : Colors.black87,
+            ),
+          ),
+          const Icon(Icons.arrow_drop_down,color: Colors.black,),
+        ],
+      ),
     ),
   );
 }
 
 
 
+
+// Widget _searchableDropdown(List<String> list, String? val) {
+//   final TextEditingController searchController = TextEditingController();
+
+//   return DropdownButtonFormField2<String>(
+//     value: val,
+//     isExpanded: true,
+
+//     iconStyleData: const IconStyleData(
+//       icon: Icon(
+//         Icons.keyboard_arrow_down_rounded,
+//         color: Colors.black87,
+//       ),
+//     ),
+
+//     decoration: InputDecoration(
+//       labelText: 'Select Locality',
+//       labelStyle: const TextStyle(
+//         fontSize: 17,
+//         color: Colors.black,
+//       ),
+//       filled: true,
+//       fillColor: Colors.white,
+//       contentPadding: const EdgeInsets.symmetric(
+//         horizontal: 16,
+//         vertical: 14,
+//       ),
+//       border: OutlineInputBorder(
+//         borderRadius: BorderRadius.circular(14),
+//         borderSide: BorderSide.none,
+//       ),
+//       enabledBorder: OutlineInputBorder(
+//         borderRadius: BorderRadius.circular(14),
+//         borderSide: BorderSide(color: Colors.grey.shade300),
+//       ),
+//       focusedBorder: OutlineInputBorder(
+//         borderRadius: BorderRadius.circular(14),
+//         borderSide: const BorderSide(color: Colors.black, width: 1.5),
+//       ),
+//     ),
+
+//     dropdownStyleData: DropdownStyleData(
+//       maxHeight: 260,
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(14),
+//       ),
+//     ),
+
+//     menuItemStyleData: const MenuItemStyleData(
+//       height: 50,
+//       padding: EdgeInsets.symmetric(horizontal: 14),
+//     ),
+
+//     items: list
+//         .map(
+//           (area) => DropdownMenuItem<String>(
+//             value: area,
+//             child: Text(
+//               area,
+//               style: const TextStyle(
+//                 fontSize: 15,
+//                 color: Colors.black87,
+//                 fontWeight: FontWeight.w500,
+//               ),
+//             ),
+//           ),
+//         )
+//         .toList(),
+
+//     /// 🔍 SEARCH CONFIG
+//     dropdownSearchData: DropdownSearchData(
+//       searchController: searchController,
+//       searchInnerWidgetHeight: 60,
+//       searchInnerWidget: Padding(
+//         padding: const EdgeInsets.all(8),
+//         child: TextField(
+//           controller: searchController,
+//           decoration: InputDecoration(
+//             hintText: 'Search locality...',
+//             prefixIcon: const Icon(Icons.search),
+//             border: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(10),
+//             ),
+//           ),
+//         ),
+//       ),
+
+//       /// FILTER LOGIC
+//       searchMatchFn: (item, searchValue) {
+//         return item.value!
+//             .toLowerCase()
+//             .contains(searchValue.toLowerCase());
+//       },
+//     ),
+
+//     onChanged: (value) {
+//       setState(() {
+//         val = value;
+//       });
+//     },
+
+//     onMenuStateChange: (isOpen) {
+//       if (!isOpen) {
+//         searchController.clear(); // reset search
+//       }
+//     },
+//   );
+// }
+
+
+// Widget _dropdown(List<String> list, String? val) {
+//   return DropdownButtonFormField<String>(
+//     value: val,
+//     isExpanded: true,
+//     icon: const Icon(
+//       Icons.keyboard_arrow_down_rounded,
+//       color: Colors.black87,
+//     ),
+
+//     decoration: InputDecoration(
+//       labelText: 'Select Locality',
+//       labelStyle: const TextStyle(
+//         fontSize: 17,
+//         color: Colors.black,
+//       ),
+//       filled: true,
+//       fillColor: Colors.white,
+//       contentPadding: const EdgeInsets.symmetric(
+//         horizontal: 16,
+//         vertical: 14,
+//       ),
+//       border: OutlineInputBorder(
+//         borderRadius: BorderRadius.circular(14),
+//         borderSide: BorderSide.none,
+//       ),
+//       enabledBorder: OutlineInputBorder(
+//         borderRadius: BorderRadius.circular(14),
+//         borderSide: BorderSide(
+//           color: Colors.grey.shade300,
+//         ),
+//       ),
+//       focusedBorder: OutlineInputBorder(
+//         borderRadius: BorderRadius.circular(14),
+//         borderSide: const BorderSide(
+//           color: Colors.black,
+//           width: 1.5,
+//         ),
+//       ),
+//     ),
+
+//     dropdownColor: Colors.white,
+//     borderRadius: BorderRadius.circular(14),
+//     itemHeight: 50, // 👈 VERY important
+
+//     items: list.map((area) {
+//       return DropdownMenuItem<String>(
+//         value: area,
+//         child: Container(
+//           width: double.infinity,
+//           padding: const EdgeInsets.symmetric(horizontal: 14),
+//           alignment: Alignment.centerLeft,
+//           child: Text(
+//             area,
+//             style: const TextStyle(
+//               fontSize: 15,
+//               color: Colors.black87,
+//               fontWeight: FontWeight.w500,
+//             ),
+//           ),
+//         ),
+//       );
+//     }).toList(),
+
+//     onChanged: (value) {
+//       setState(() {
+//         val = value;
+//       });
+//     },
+//   );
+// }
 
 
 // Widget _mainContent() {
@@ -1088,53 +1685,54 @@ Widget _mainContent() {
 //     ),
 //   );
 // }
-Widget _buildPickupSlotSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SizedBox(height: 28),
-      _buildSectionTitle("Select a Pickup slot"),
-      Text(
-        "Select your preferred time slot.",
-        style: TextStyle(
-          color: Colors.grey[600],
-          height: 1.3,
-        ),
-      ),
-      const SizedBox(height: 16),
-      Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: [
-          TimeChip(
-            label: "8 AM - 11 AM",
-            selectedTimeRange: selectedTimeRange,
-            onSelected: (value) =>
-                setState(() => selectedTimeRange = value),
-          ),
-          TimeChip(
-            label: "11 AM - 1 PM",
-            selectedTimeRange: selectedTimeRange,
-            onSelected: (value) =>
-                setState(() => selectedTimeRange = value),
-          ),
-          TimeChip(
-            label: "1 PM - 3 PM",
-            selectedTimeRange: selectedTimeRange,
-            onSelected: (value) =>
-                setState(() => selectedTimeRange = value),
-          ),
-          TimeChip(
-            label: "3 PM - 6 PM",
-            selectedTimeRange: selectedTimeRange,
-            onSelected: (value) =>
-                setState(() => selectedTimeRange = value),
-          ),
-        ],
-      ),
-    ],
-  );
-}
+
+// Widget _buildPickupSlotSection() {
+//   return Column(
+//     crossAxisAlignment: CrossAxisAlignment.start,
+//     children: [
+//       const SizedBox(height: 28),
+//       _buildSectionTitle("Select a Pickup slot"),
+//       Text(
+//         "Select your preferred time slot.",
+//         style: TextStyle(
+//           color: Colors.grey[600],
+//           height: 1.3,
+//         ),
+//       ),
+//       const SizedBox(height: 16),
+//       Wrap(
+//         spacing: 12,
+//         runSpacing: 12,
+//         children: [
+//           TimeChip(
+//             label: "8 AM - 11 AM",
+//             selectedTimeRange: selectedTimeRange,
+//             onSelected: (value) =>
+//                 setState(() => selectedTimeRange = value),
+//           ),
+//           TimeChip(
+//             label: "11 AM - 1 PM",
+//             selectedTimeRange: selectedTimeRange,
+//             onSelected: (value) =>
+//                 setState(() => selectedTimeRange = value),
+//           ),
+//           TimeChip(
+//             label: "1 PM - 3 PM",
+//             selectedTimeRange: selectedTimeRange,
+//             onSelected: (value) =>
+//                 setState(() => selectedTimeRange = value),
+//           ),
+//           TimeChip(
+//             label: "3 PM - 6 PM",
+//             selectedTimeRange: selectedTimeRange,
+//             onSelected: (value) =>
+//                 setState(() => selectedTimeRange = value),
+//           ),
+//         ],
+//       ),
+//     ],
+//   );
+// }
 
 
 

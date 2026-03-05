@@ -12,7 +12,7 @@ import 'package:http/http.dart' as http;
 
 
 const String _tokenUrl =
-    "https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/handletoken";
+    "https://api.cyklze.com/cyklzee/handletoken";
 class PickupProvider with ChangeNotifier {
   String? _selectedDate;
   String? _selectedTimeRange;

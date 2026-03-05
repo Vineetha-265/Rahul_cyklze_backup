@@ -6,6 +6,7 @@ import 'package:cyklze/SecureStorage/securestorage.dart';
 import 'package:cyklze/Views/error.dart';
 import 'package:cyklze/Views/loginrequird.dart';
 import 'package:cyklze/screens/webpageview.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cyklze/enums/page_state.dart';
@@ -17,7 +18,7 @@ import 'package:http/http.dart' as http;
 import '../widgets/otp_fields.dart';
 
 const String kEndpoint =
-    "https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/handleotp";
+    "https://api.cyklze.com/cyklzee/handleotp";
 
 
 class PhoneVerificationPage extends StatefulWidget {
@@ -286,15 +287,15 @@ Widget _mainContent() {
        
           Text(
             otpSent ? "Enter the OTP" : "Verify your phone",
-            style: const TextStyle(
-                fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87),
+            style:  GoogleFonts.poppins(
+                fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
           ),
           const SizedBox(height: 8),
           Text(
             otpSent
                 ? "Enter the 6-digit code sent to your phone."
                 : "We'll send a one-time code to verify your account.",
-            style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+            style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey[700]),
           ),
 
        
@@ -319,10 +320,10 @@ Widget _mainContent() {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child:
-                  Text(errorMessage, style: const TextStyle(color: Colors.redAccent)),
+                  Text(errorMessage, style:  GoogleFonts.poppins(color: Colors.redAccent)),
             ),
           if (otpSent) ...[
-              const Text("Enter Otp", style: TextStyle(color: Colors.black )),
+               Text("Enter Otp", style: GoogleFonts.poppins(color: Colors.black )),
             const SizedBox(height: 6),
             SingleOtpField(
               controller: otpControllers,
@@ -339,7 +340,7 @@ Widget _mainContent() {
                   remainingSeconds == 0
                       ? "Resend OTP"
                       : "Resend in ${remainingSeconds}s",
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     color: remainingSeconds == 0
                         ? Colors.teal.shade700
@@ -379,7 +380,7 @@ Widget _mainContent() {
           )
         : Text(
             !otpSent ? "Send OTP" : "Verify OTP",
-            style: const TextStyle(
+            style:  GoogleFonts.poppins(
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -457,8 +458,8 @@ class _PhoneInputRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Text("Mobile Number",
-          style: TextStyle(fontWeight: FontWeight.w600)),
+       Text("Mobile Number",
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
       const SizedBox(height: 8),
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -477,7 +478,7 @@ class _PhoneInputRow extends StatelessWidget {
               controller: controller,
               keyboardType: TextInputType.phone,
               inputFormatters: [LengthLimitingTextInputFormatter(10)],
-              style: const TextStyle(letterSpacing: 1.2),
+              style:  GoogleFonts.poppins(letterSpacing: 1),
               decoration: const InputDecoration(
                   hintText: "Enter mobile number", border: InputBorder.none),
               onChanged: onChanged,
@@ -505,18 +506,18 @@ class TermsText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text("By continuing you agree to our", textAlign: TextAlign.center),
+        Text("By continuing you agree to our",style: GoogleFonts.poppins(), textAlign: TextAlign.center),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextButton(
               onPressed: () => _launchURL(context, 'https://www.cyklze.com/Terms_of_Service.html', "Terms of Service"),
-              child: const Text('Terms of Service', style: TextStyle(decoration: TextDecoration.underline)),
+              child:  Text('Terms of Service', style: GoogleFonts.poppins(decoration: TextDecoration.underline)),
             ),
-            const Text(' and '),
+             Text(' and ',style: GoogleFonts.poppins(),),
             TextButton(
               onPressed: () => _launchURL(context, 'https://www.cyklze.com/Privacy_policy.html', "Privacy Policy"),
-              child: const Text('Privacy Policy', style: TextStyle(decoration: TextDecoration.underline)),
+              child:  Text('Privacy Policy', style: GoogleFonts.poppins(decoration: TextDecoration.underline)),
             ),
           ],
         )

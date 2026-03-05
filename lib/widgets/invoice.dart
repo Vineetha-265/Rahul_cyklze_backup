@@ -307,6 +307,7 @@
 
 import 'package:cyklze/screens/pickup_history.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 
 class InvoicePage extends StatelessWidget {
@@ -329,9 +330,9 @@ class InvoicePage extends StatelessWidget {
           ),
         ),
       ),
-      title: const Text(
+      title:  Text(
         "Payout Slip",
-        style: TextStyle(color: Colors.white,  fontSize: 16,
+        style: GoogleFonts.poppins(color: Colors.white,  fontSize: 16,
                         fontWeight: FontWeight.w800,),
       ),
       leading: IconButton(
@@ -373,7 +374,7 @@ class InvoicePage extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               "Thank you for choosing Cyklze!",
-              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[700]),
             ),
           )
         ],
@@ -383,19 +384,19 @@ class InvoicePage extends StatelessWidget {
 
   // HEADER
 Widget _buildHeader() {
-  return const Wrap(
+  return  Wrap(
     alignment: WrapAlignment.spaceBetween,
     runSpacing: 12,
     children: [
-    const  Column(
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children:  [
           Text(
             "CYKLZE",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 6),
-          Text("www.cyklze.com"),
+          Text("www.cyklze.com" ,style: GoogleFonts.poppins(),),
         ],
       ),
       // Column(
@@ -419,8 +420,8 @@ Widget _buildHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Pickup Details",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+         Text("Pickup Details",
+            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
 
         _infoText("Pickup Type", item.pickupType),
@@ -432,13 +433,13 @@ Widget _buildHeader() {
         const Divider(),
         const SizedBox(height: 12),
 
-        const Text("Additional Information",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+         Text("Additional Information",
+            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
 
         Text(
           item.details,
-          style: const TextStyle(fontSize: 15, height: 1.5),
+          style:  GoogleFonts.poppins(fontSize: 15, height: 1.5),
         ),
       ],
     );
@@ -451,7 +452,7 @@ Widget _buildHeader() {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text("$title:",
-              style: const TextStyle(fontWeight: FontWeight.bold)),
+              style:  GoogleFonts.poppins(fontWeight: FontWeight.bold)),
           Text(value),
         ],
       ),
@@ -575,7 +576,7 @@ class _TableCell extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       child: Text(
         text,
-        style: TextStyle(
+        style: GoogleFonts.poppins(
           fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
           fontSize: isHeader ? 16 : 15,
         ),
@@ -601,7 +602,7 @@ class _SummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = TextStyle(
+    final style = GoogleFonts.poppins(
       fontWeight: bold ? FontWeight.bold : FontWeight.normal,
       fontSize: big ? 18 : 16,
     );

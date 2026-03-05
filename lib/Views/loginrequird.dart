@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginRequired extends StatelessWidget {
   final VoidCallback onLogin;
@@ -30,7 +31,7 @@ class LoginRequired extends StatelessWidget {
             Text(
               message ?? "Login Required",
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
                     color: const Color(0xFF1D4D61),
@@ -41,7 +42,7 @@ class LoginRequired extends StatelessWidget {
             Text(
               "You are not logged in, You need to log in to see this page.",
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: GoogleFonts.poppins(
                     color: Colors.grey[600],
                   ),
             ),
@@ -77,9 +78,9 @@ class LoginRequired extends StatelessWidget {
         alignment: Alignment.center,
         width: double.infinity,
         height: double.infinity,
-        child: const Text(
+        child:  Text(
           "Login",
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.white,

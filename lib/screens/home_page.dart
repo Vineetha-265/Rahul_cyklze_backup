@@ -17,6 +17,7 @@ import 'dart:math' as math;
 import 'package:cyklze/screens/supermarket.dart';
 import 'package:cyklze/screens/update_number.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -45,12 +46,12 @@ Widget build(BuildContext context) {
     appBar: AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      title: const Row(
+      title:  Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
            Text(
             'Cyklze',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: Color(0xFF1D4D61),
               fontWeight: FontWeight.bold,
               fontSize: 20,
@@ -97,12 +98,12 @@ Widget build(BuildContext context) {
           _buildContactSection(context),
           const SizedBox(height: 30),
 
-          const Padding(
+           Padding(
             padding: EdgeInsets.only(top: 100, bottom: 100),
             child: Text(
               'Sell your scrap with ❤️',
               textAlign: TextAlign.left,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 80,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF8F8F92),
@@ -120,6 +121,10 @@ Widget build(BuildContext context) {
       backgroundColor: Colors.white,
       currentIndex: 0,
       selectedItemColor: Colors.black,
+        selectedLabelStyle: GoogleFonts.poppins(
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+  ),
       unselectedItemColor: Colors.grey,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
@@ -270,23 +275,23 @@ void _showWelcomeDialog(BuildContext context) {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+               Text(
                 'Welcome',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1D4D61),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+               Text(
                 'Your Scrap, Easily with Cyklze!\n\n'
                 'Got paper, plastic, metal, e-waste, or cardboard?\n'
                 'Cyklze makes scrap selling simple and convenient.\n\n'
                 '📦 Book a Pickup: Choose items, date & time.\n'
                 '📍 We Collect: Scrap is weighed at your location.\n'
                 '💵 Get Paid: Quick and transparent payments.',
-                style: TextStyle(fontSize: 16, color: Colors.black87),
+                style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
@@ -300,9 +305,9 @@ void _showWelcomeDialog(BuildContext context) {
                     ),
                   ),
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text(
+                  child:  Text(
                     'OK',
-                    style: TextStyle(color: Colors.white),
+                    style: GoogleFonts.poppins(color: Colors.white),
                   ),
                 ),
               ),
@@ -324,121 +329,137 @@ Widget _buildToolsSection(BuildContext context) {
  // pushes the right-hand sections to the end
     
       // Current Prices Section
-      Expanded(
-        child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const PricePage()),
-            );
-          },
-          child: Container(
-             decoration: BoxDecoration(
-           color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Column(
-               mainAxisSize: MainAxisSize.min, // <-- important!
-            crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Semantics(
-                    label: 'Current Prices',
-                    child: const Text(
-                      'Current Prices',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  Semantics(
-                    label: 'View latest scrap prices',
-                    child:const Text(
-                      'View latest scrap prices',
-                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w400,
-                        height: 1.3,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Image.asset(
-                    'assets/images/price.jpg',
-                    width: 50,
-                    height: 40,
-                    fit: BoxFit.cover,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+      // Expanded(
+      //   child: InkWell(
+      //     onTap: () {
+      //       Navigator.push(
+      //         context,
+      //         MaterialPageRoute(builder: (_) => const PricePage()),
+      //       );
+      //     },
+      //     child: Container(
+      //        decoration: BoxDecoration(
+      //      color: Colors.white,
+      //       borderRadius: BorderRadius.circular(20),
+      //       boxShadow: [
+      //         BoxShadow(
+      //           color: Colors.black.withOpacity(0.08),
+      //           blurRadius: 6,
+      //           offset: const Offset(0, 3),
+      //         ),
+      //       ],
+      //     ),
+      //       child: Padding(
+      //         padding: const EdgeInsets.all(5.0),
+      //         child: Column(
+      //          mainAxisSize: MainAxisSize.min, // <-- important!
+      //       crossAxisAlignment: CrossAxisAlignment.center,
+      //           children: [
+      //             Semantics(
+      //               label: 'Current Prices',
+      //               child:  Text(
+      //                 'Current Prices',
+      //                 style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+      //               ),
+      //             ),
+      //             Semantics(
+      //               label: 'View latest scrap prices',
+      //               child: Text(
+      //                 'View latest scrap prices',
+      //                  textAlign: TextAlign.center,
+      //                 style: GoogleFonts.poppins(
+      //                   color: Colors.grey,
+      //                   fontWeight: FontWeight.w400,
+      //                   height: 1.3,
+      //                 ),
+      //               ),
+      //             ),
+      //             const SizedBox(height: 6),
+      //             Image.asset(
+      //               'assets/images/price.jpg',
+      //               width: 50,
+      //               height: 40,
+      //               fit: BoxFit.cover,
+      //             ),
+      //           ],
+      //         ),
+      //       ),
+      //     ),
+      //   ),
+      // ),
     
-      const SizedBox(width: 20),
+      // const SizedBox(width: 20),
     
       // FAQ Section
-      Expanded(
-        child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const FAQPage()),
-            );
-          },
-          child: 
-             Container(
-          width: double.infinity, // allows text to wrap naturally
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.08),
-          blurRadius: 6,
-          offset: const Offset(0, 3),
-        ),
-            ],
+   Expanded(
+  child: InkWell(
+    borderRadius: BorderRadius.circular(20),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const FAQPage()),
+      );
+    },
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
-          child: Column(
-             mainAxisSize: MainAxisSize.min, // <-- important!
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-        const Text(
-          'FAQs',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-       const Text(
-          'Quick answers to common questions',
-          style:  TextStyle(
-            color: Colors.grey,
-            fontWeight: FontWeight.w400,
-            height: 1.3,
-          ),
-          softWrap: true,
-          overflow: TextOverflow.visible,
-          textAlign: TextAlign.center, // optional for better layout
-        ),
-        const SizedBox(height: 6),
-        Image.asset(
-          'assets/images/faq.jpg',
-          width: 40,
-          height: 40,
-          fit: BoxFit.cover,
-        ),
-            ],
-          ),
-        ),
-         ),
+        ],
       ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+
+          /// ✅ Logo (Left)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.asset(
+              'assets/images/faq.jpg',
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          const SizedBox(width: 14),
+
+          /// ✅ Text Content (Right)
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'FAQs',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Quick answers to common questions',
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 13,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+)
     ],
   );
 }
@@ -487,9 +508,9 @@ ClipOval(
             Expanded(
               child: Semantics(
                 label: 'Need help? Chat with support team',
-                child: const Text(
+                child:  Text(
                   'Need help? Get support with our team',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
@@ -564,7 +585,7 @@ class ModernPickupCard extends StatelessWidget {
                             label: title,
                             child: Text(
                               title,
-                              style: const TextStyle(
+                              style:  GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white, 
@@ -576,7 +597,7 @@ class ModernPickupCard extends StatelessWidget {
                             label: subtitle,
                             child: Text(
                               subtitle,
-                              style: const TextStyle(
+                              style:  GoogleFonts.poppins(
                                     color: Colors.white, 
                                     fontWeight: FontWeight.w400,
                                     height: 1.3,
@@ -645,7 +666,7 @@ Widget build(BuildContext context) {
                   label: title,  
                   child: Text(
                     title,
-                    style: const TextStyle(
+                    style:  GoogleFonts.poppins(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -658,7 +679,7 @@ Widget build(BuildContext context) {
             label: description,
             child: Text(
               description,
-              style: const TextStyle(color: Colors.black54, fontSize: 14),
+              style:  GoogleFonts.poppins(color: Colors.black54, fontSize: 14),
             ),
           ),
           const SizedBox(height: 16),
@@ -729,7 +750,7 @@ class _WaveTextState extends State<WaveText> with SingleTickerProviderStateMixin
               offset: Offset(0, offsetY),
               child: Text(
                 text[index],
-                style: const TextStyle(
+                style:  GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1D4D61),

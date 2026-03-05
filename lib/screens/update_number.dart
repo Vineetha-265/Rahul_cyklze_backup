@@ -66,9 +66,9 @@ class _EditMobileNumberPageState extends State<EditMobileNumberPage> {
   String _countryCode = '+91';
 
   static const String _sendOtpUrl =
-      'https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/handleotp';
+      'https://api.cyklze.com/cyklzee/handleotp';
   static const String _verifyOtpUrl =
-      'https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/handleuser';
+      'https://api.cyklze.com/cyklzee/handleuser';
 
   @override
   void initState() {

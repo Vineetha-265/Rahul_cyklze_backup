@@ -5,6 +5,7 @@ import 'package:cyklze/screens/help_page.dart';
 import 'package:cyklze/screens/home_page.dart';
 import 'package:cyklze/screens/pickup_history.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 
 class PickupConfirmedPage extends StatefulWidget {
@@ -118,7 +119,7 @@ Widget _optionTile({
                       label: 'Title: $title',
                       child: Text(
                         title,
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: color),
@@ -129,7 +130,7 @@ Widget _optionTile({
   label: 'Subtitle: $subtitle',
   child: Text(
     subtitle,
-    style: const TextStyle(
+    style:  GoogleFonts.poppins(
       fontSize: 13,
       color: Colors.black,
       fontWeight: FontWeight.bold,
@@ -217,7 +218,7 @@ Widget build(BuildContext context) {
                          
                           Text(
                             'Pickup Confirmed',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: maxW < 360 ? 16 : 18,
                               fontWeight: FontWeight.w800,
                               color: Colors.black87,
@@ -349,7 +350,7 @@ Widget build(BuildContext context) {
                       label: 'Congratulatory message',
                       child: Text(
                         'You’re awesome! ✨',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                             fontSize: maxW < 360 ? 20 : 22,
                             fontWeight: FontWeight.w800,
                             color: Colors.black87),
@@ -360,12 +361,12 @@ Widget build(BuildContext context) {
                  Semantics(
     label:
         'Description: Pickup scheduled successfully. Thanks for choosing us.',
-    child: const Padding(
+    child:  Padding(
       padding: EdgeInsets.symmetric(horizontal: 12),
       child: Text(
-        'Pickup scheduled successfully. Thanks for choosing us.',
+         'Pickup scheduled successfully.\nThanks for choosing us.',
         textAlign: TextAlign.center,
-        style: TextStyle(
+        style: GoogleFonts.poppins(
           fontSize: 14,
           color: Colors.black,
           fontWeight: FontWeight.bold, 

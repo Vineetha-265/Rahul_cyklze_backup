@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ErrorRetry extends StatelessWidget {
   final VoidCallback onRetry;
@@ -30,7 +31,7 @@ class ErrorRetry extends StatelessWidget {
             Text(
               message ?? "Something went wrong",
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
                     color: const Color(0xFF1D4D61),
@@ -40,7 +41,7 @@ class ErrorRetry extends StatelessWidget {
             Text(
               "Please try again.",
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: GoogleFonts.poppins(
                     color: Colors.grey[600],
                   ),
             ),
@@ -74,9 +75,9 @@ class ErrorRetry extends StatelessWidget {
                   ),
                   child: Container(
                     alignment: Alignment.center,
-                    child: const Text(
+                    child:  Text(
                       "Retry",
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,

@@ -14,6 +14,7 @@ import 'package:cyklze/screens/price_page.dart';
 import 'package:cyklze/screens/profile_management.dart';
 import 'package:cyklze/screens/verification.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -30,14 +31,15 @@ class _ProfilePageState extends State<ProfilePage> {
   late final provider;
   bool loggedOut = false;
   String? phoneNumber;
-
+int _runCount = 0;
+int _runCount1 = 0;
   Pagestate _state = Pagestate.loading;
   static const profileUrl =
-      "https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/profile";
+      "https://api.cyklze.com/cyklzee/profile";
   static const logoutUrl =
-      "https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/logoutordelete";
+      "https://api.cyklze.com/cyklzee/logoutordelete";
   static const refreshUrl =
-      "https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/handletoken";
+      "https://api.cyklze.com/cyklzee/handletoken";
 
 @override
 void initState() {
@@ -84,21 +86,31 @@ Future<void> fetchProfile() async {
         .get(Uri.parse(profileUrl), headers: {
           "Authorization": token.toString(),
         })
-        .timeout(const Duration(seconds: 10)); 
+        .timeout(const Duration(seconds: 20)); 
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
     
         setState(() 
        {phoneNumber = data["phone_number"]?.toString(); 
+  
         _state = Pagestate.loggedIn;
        });
-    } else if (response.statusCode == 401) {
-      final provider = Provider.of<PickupProvider>(context, listen: false);
+       if(data["email"].toString().isNotEmpty){
+  await SecureStorage.saveemail(data["email"].toString());
+       }
+          
+    } else {
+       if (_runCount >= 2){
+           setState(() => _state = Pagestate.error);
+         }else{
+          _runCount++;
+ final provider = Provider.of<PickupProvider>(context, listen: false);
           Pagestate result = await provider.refreshAccessToken(fetchProfile,"exe");
              setState(() => _state = result);
-    } else {
-       setState(() => _state = Pagestate.notLogged);
+         }
+     
+    
     }
   } on TimeoutException {
     setState(() => _state = Pagestate.offline);
@@ -163,10 +175,16 @@ Future<void> fetchProfile() async {
         if (!mounted) return;
       setState(() => _state = Pagestate.notLogged);
       } else {
-       
+         if (_runCount1 >= 2){
+           setState(() => _state = Pagestate.error);
+         }else{
+_runCount1++;
 final   provider = Provider.of<PickupProvider>(context, listen: false);
   Pagestate result = await provider.refreshAccessToken(logOut,"exe");
              setState(() => _state = result);
+         }
+       
+
       }
     } catch (e) {
       if (!mounted) return;
@@ -353,9 +371,9 @@ Widget _mainProfileView() {
                             children: [
                               Semantics(
                                 label: 'Profile Name',
-                                child: const Text(
+                                child:  Text(
                                   "Your Profile",
-                                  style: TextStyle(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w800,
                                     color: Color(0xFF111827),
@@ -368,7 +386,7 @@ Widget _mainProfileView() {
                                 label: 'Phone number',
                                 child: Text(
                                   phoneNumber ?? "",
-                                  style: const TextStyle(
+                                  style:  GoogleFonts.poppins(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
                                     color: Color(0xFF6B7280),
@@ -390,16 +408,16 @@ Widget _mainProfileView() {
           ],
         ),
 
-        _buildMenuButton(
-          title: "Current Prices",
-          icon: Icons.currency_rupee,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const PricePage()),
-            );
-          },
-        ),
+        // _buildMenuButton(
+        //   title: "Current Prices",
+        //   icon: Icons.currency_rupee,
+        //   onTap: () {
+        //     Navigator.push(
+        //       context,
+        //       MaterialPageRoute(builder: (context) => const PricePage()),
+        //     );
+        //   },
+        // ),
         _buildMenuButton(
           title: "Pickups",
           icon: Icons.shopping_bag_outlined,
@@ -480,7 +498,7 @@ Widget _buildMenuButton({
                 label: 'Menu Item: $title',
                 child: Text(
                   title,
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 15, // slightly bigger font
                     fontWeight: FontWeight.w600,
                     color: isLogout ? Colors.red : Colors.black87,

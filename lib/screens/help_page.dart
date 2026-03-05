@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import 'package:cyklze/enums/page_state.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cyklze/SecureStorage/securestorage.dart';
@@ -22,7 +23,7 @@ class HelpPage extends StatefulWidget {
 }
 
 class _HelpPageState extends State<HelpPage> {
-  static const String companyEmail = 'support@cyklze.com';
+  String? companyEmail = 'support@cyklze.com';
 
   bool isLoading = false;
   bool isOffline = false;
@@ -54,6 +55,7 @@ class _HelpPageState extends State<HelpPage> {
     }
 
     final accessToken = await SecureStorage.getAccessToken();
+    companyEmail = await SecureStorage.getemail();
     if (accessToken == null || accessToken.isEmpty) {
       setState(() {
         isLoggedIn = false;
@@ -77,9 +79,9 @@ void confirmLogout(BuildContext context) {
       backgroundColor: const Color(0xFFF5F5F5),
       title: Semantics(
         label: 'Note',
-        child: const Text(
+        child:  Text(
           "Note",
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
             fontSize: 18,
             color: Color(0xFF1D4D61),
@@ -88,8 +90,8 @@ void confirmLogout(BuildContext context) {
       ),
       content: Semantics(
         label: ' confirmation message',
-        child: const Text(
-          "You have recently registered a call back, you cannot register one more.",   style: TextStyle(fontSize: 14, color: Colors.black),
+        child:  Text(
+          "You have recently registered a call back, you cannot register one more.",   style: GoogleFonts.poppins(fontSize: 14, color: Colors.black),
         ),
       ),
       actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -139,7 +141,7 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
               _state = Pagestate.loading;
             });
     final url = Uri.parse(
-        "https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/help");
+        "https://api.cyklze.com/cyklzee/help");
 
     try {
       final response = await http.post(
@@ -202,7 +204,7 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
 
   Future<void> _refreshAccessToken(String refreshToken) async {
     final url = Uri.parse(
-        "https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/handletoken");
+        "https://api.cyklze.com/cyklzee/handletoken");
    setState(() {
               _state = Pagestate.loading;
             });
@@ -240,7 +242,7 @@ final   provider = Provider.of<PickupProvider>(context, listen: false);
   }
 
   void _copyEmail() {
-    Clipboard.setData(const ClipboardData(text: companyEmail));
+    Clipboard.setData( ClipboardData(text: companyEmail!));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Email copied to clipboard')),
     );
@@ -308,12 +310,12 @@ Widget _maincon() {
               color: Colors.transparent,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Padding(
+            child:  Padding(
               padding: EdgeInsets.symmetric(vertical: 16, horizontal: 14), // tighter padding
               child: Text(
                 '📬 Feel free to drop us an email or ask for a callback anytime.\n\n'
                 '🕒 We’re around daily from 7:00 AM to 10:00 PM — got you covered!',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   color: Color(0xFF4A4A4A),
                   fontWeight: FontWeight.w500,
                   height: 1.5,
@@ -333,7 +335,7 @@ Widget _maincon() {
             icon: Icons.email_outlined,
             iconColor: const Color(0xFF6C63FF),
             title: 'Email us',
-            subtitle: companyEmail,
+            subtitle: companyEmail!,
             trailing: Tooltip(
               message: 'Copy email to clipboard',
               child: IconButton(
@@ -371,7 +373,7 @@ Widget _maincon() {
                   ),
                 ),
                 onPressed: _requestCallback,
-                child: const Text("Get a callback"),
+                child:  Text("Get a callback" ,style: GoogleFonts.poppins(),),
               ),
             ),
           ),
@@ -398,8 +400,8 @@ Widget _mainView() => Scaffold(
             ),
           ),
         ),
-        title: const Text("Help & Support",
-            style: TextStyle(color: Colors.white,   fontSize: 16,
+        title:  Text("Help & Support",
+            style: GoogleFonts.poppins(color: Colors.white,   fontSize: 16,
                         fontWeight: FontWeight.w800)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -445,11 +447,11 @@ Widget _buildSupportCard({
           ),
           title: Text(
             title,
-            style: const TextStyle( fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF1C1C1E), ),
+            style:  GoogleFonts.poppins( fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF1C1C1E), ),
           ),
           subtitle: Text(
             subtitle,
-           style: const TextStyle(color: Colors.black54, fontSize: 12,),
+           style:  GoogleFonts.poppins(color: Colors.black54, fontSize: 12,),
           ),
           trailing: trailing,
         ),

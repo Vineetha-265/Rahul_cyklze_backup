@@ -22,7 +22,7 @@ import 'package:provider/provider.dart';
 
 
 const String _tokenUrl =
-     "https://20pnz6cr8e.execute-api.ap-south-1.amazonaws.com/cyklzee/cyklzee/handleuser";
+     "https://api.cyklze.com/cyklzee/handleuser";
 class AccountManagementPage extends StatefulWidget {
   const AccountManagementPage({super.key});
 
@@ -36,6 +36,7 @@ class _AccountManagementPageState extends State<AccountManagementPage> {
   final bool _loading = false;
   String _selectedCity = 'Hyderabad';
   Pagestate _state = Pagestate.loggedIn;
+   int _runCount = 0;
   Color get _brand => const Color(0xFF2E7D32);
  Future<void> _loadSavedAddress() async {
     final a = await SecureStorage.getAddress();
@@ -166,10 +167,15 @@ await SecureStorage.clearAll();
 }
 
      else {
-      
+       if (_runCount >= 2){
+           setState(() => _state = Pagestate.error);
+         }else{
+      _runCount++;
 final   provider = Provider.of<PickupProvider>(context, listen: false);
        Pagestate result = await provider.refreshAccessToken(_checkTokenExpiration,"exe");
              setState(() => _state = result);
+         }
+
      
     }
   } catch (e) {
