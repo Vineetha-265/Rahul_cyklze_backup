@@ -847,17 +847,16 @@ Widget _buildOption({
         duration: const Duration(milliseconds: 250),
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Color(0xFF1D4D61) : Colors.white,
-          // ❌ Removed borderRadius
+          color: isSelected ? Colors.white : const Color(0xFF1D4D61),
           boxShadow: isSelected
-              ? [
+              ? []
+              : [
                   BoxShadow(
-                    color: Color(0xFF1D4D61).withOpacity(0.3),
+                    color: const Color(0xFF1D4D61).withOpacity(0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   )
-                ]
-              : [],
+                ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -868,7 +867,7 @@ Widget _buildOption({
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
-                color: isSelected ? Colors.white : Color(0xFF1D4D61),
+                color: isSelected ? const Color(0xFF1D4D61) : Colors.white,
               ),
             ),
             const SizedBox(height: 4),
@@ -877,15 +876,85 @@ Widget _buildOption({
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 11,
-                color: isSelected ? Colors.white : Color(0xFF1D4D61),
+                color: isSelected ? const Color(0xFF1D4D61) : Colors.white,
               ),
             ),
+
+            if (isSelected) ...[
+              const SizedBox(height: 4),
+              Text(
+                "In Action",
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF1D4D61),
+                ),
+              ),
+            ],
           ],
         ),
       ),
     ),
   );
 }
+
+
+
+
+// Widget _buildOption({
+//   required int index,
+//   required String title,
+//   required String subtitle,
+//   required GestureTapCallback onTap,
+// }) {
+//   final bool isSelected = selectedIndex == index;
+
+//   return Expanded(
+//     child: GestureDetector(
+//       onTap: onTap,
+//       child: AnimatedContainer(
+//         duration: const Duration(milliseconds: 250),
+//         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+//         decoration: BoxDecoration(
+//           color: isSelected ? Color(0xFF1D4D61) : Colors.white,
+//           // ❌ Removed borderRadius
+//           boxShadow: isSelected
+//               ? [
+//                   BoxShadow(
+//                     color: Color(0xFF1D4D61).withOpacity(0.3),
+//                     blurRadius: 8,
+//                     offset: const Offset(0, 3),
+//                   )
+//                 ]
+//               : [],
+//         ),
+//         child: Column(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             Text(
+//               title,
+//               textAlign: TextAlign.center,
+//               style: GoogleFonts.poppins(
+//                 fontWeight: FontWeight.bold,
+//                 fontSize: 13,
+//                 color: isSelected ? Colors.white : Color(0xFF1D4D61),
+//               ),
+//             ),
+//             const SizedBox(height: 4),
+//             Text(
+//               subtitle,
+//               textAlign: TextAlign.center,
+//               style: GoogleFonts.poppins(
+//                 fontSize: 11,
+//                 color: isSelected ? Colors.white : Color(0xFF1D4D61),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     ),
+//   );
+// }
 
  
  Widget mainContent() {
