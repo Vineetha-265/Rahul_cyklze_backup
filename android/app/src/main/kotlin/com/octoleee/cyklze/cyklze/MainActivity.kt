@@ -1,4 +1,4 @@
-package com.octoleee.cyklze.cyklze
+package com.techqarin.cyklze
 
 import io.flutter.embedding.android.FlutterActivity
 

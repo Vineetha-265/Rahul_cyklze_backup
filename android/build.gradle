@@ -1,7 +1,7 @@
 // TOP-LEVEL BUILD.GRADLE
 
 buildscript {
-    ext.kotlin_version = '1.9.10' // ✅ Compatible with AGP 8.1.1
+    ext.kotlin_version = '2.1.0'
 
     repositories {
         google()
@@ -9,8 +9,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.1' // ✅ AGP version
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" // ✅ Kotlin plugin
+        classpath 'com.android.tools.build:gradle:8.7.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 

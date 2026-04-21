@@ -6,11 +6,12 @@ plugins {
 }
 
 android {
-    namespace = "com.octoleee.cyklze.cyklze"
+    namespace = "com.techqarin.cyklze"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Required for Play's 16 KB page-size native compatibility checks.
+    ndkVersion = "27.0.12077973"
   defaultConfig {
-        applicationId "com.octoleee.cyklze.cyklze"
+        applicationId "com.techqarin.cyklze"
         minSdkVersion flutter.minSdkVersion // ✅ REQUIRED for modern NDK
         targetSdkVersion 35
         versionCode 10
