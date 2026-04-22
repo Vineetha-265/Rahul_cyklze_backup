@@ -14,8 +14,8 @@ android {
         applicationId "com.techqarin.cyklze"
         minSdkVersion flutter.minSdkVersion // ✅ REQUIRED for modern NDK
         targetSdkVersion 35
-        versionCode 10
-        versionName "2.1.2"
+        versionCode 23
+        versionName "9.9.2"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
