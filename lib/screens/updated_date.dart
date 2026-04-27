@@ -159,30 +159,119 @@ try {
 }
 }
 
-  /// Camera permission logic
+// Future<bool> _handleCameraPermission() async {
+// final status = await Permission.camera.request();
+
+// ScaffoldMessenger.of(context).showSnackBar(
+//   SnackBar(
+//     content: Text("Camera permission status: $status"),
+//     duration: const Duration(seconds: 3),
+//   ),
+// );
+//   // ✅ Granted
+//   if (status.isGranted) {
+//     return true;
+//   }
+
+//   // ❌ Permanently denied / restricted (iOS + Android "Don't ask again")
+//   if (status.isPermanentlyDenied || status.isRestricted) {
+//     if (mounted) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(
+//           content: Text("Camera permission is permanently denied. Please enable it from Settings."),
+//           duration: Duration(seconds: 3),
+//         ),
+//       );
+
+//       await Future.delayed(const Duration(milliseconds: 500));
+//       _showPermissionDialog(); // your dialog with "Open Settings"
+//     }
+//     return false;
+//   }
+
+//   // ❌ Denied (first time or normal deny)
+//   if (status.isDenied) {
+//     if (mounted) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(
+//           content: Text("Camera permission denied. Please allow it to continue."),
+//           duration: Duration(seconds: 2),
+//         ),
+//       );
+//     }
+//     return false;
+//   }
+
+//   // ❌ Fallback (rare cases)
+//   if (mounted) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       const SnackBar(
+//         content: Text("Unable to access camera. Please try again."),
+//         duration: Duration(seconds: 2),
+//       ),
+//     );
+//   }
+
+//   return false;
+// }
+
+
+
+
+
+
 Future<bool> _handleCameraPermission() async {
-  var status = await Permission.camera.status;
+  // Always request first (important for iOS)
+  final status = await Permission.camera.request();
 
-  if (status.isDenied) {
-    status = await Permission.camera.request();
+  // ✅ Permission granted
+  if (status.isGranted) {
+    return true;
   }
 
+  // ❌ User denied permanently OR iOS restricted
   if (status.isPermanentlyDenied || status.isRestricted) {
-    _showPermissionDialog();
-    return false;
-  }
-
-  if (!status.isGranted) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Camera permission is required.")),
-      );
+      _showPermissionDialog();
     }
     return false;
   }
 
-  return true;
+  // ❌ Just denied (first time or temporary)
+  if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Camera permission is required.")),
+    );
+  }
+
+  return false;
 }
+  
+  
+  /// Camera permission logic
+// Future<bool> _handleCameraPermission() async {
+//   var status = await Permission.camera.status;
+
+//   if (status.isDenied) {
+//     status = await Permission.camera.request();
+//   }
+
+//   if (status.isPermanentlyDenied || status.isRestricted) {
+//     _showPermissionDialog();
+//     return false;
+//   }
+
+//   if (!status.isGranted) {
+//     if (mounted) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text("Camera permission is required.")),
+//       );
+//     }
+//     return false;
+//   }
+
+//   return true;
+// }
 
   /// Show dialog if permanently denied
   void _showPermissionDialog() {
