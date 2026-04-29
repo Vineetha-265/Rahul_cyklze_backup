@@ -173,14 +173,27 @@ Widget _optionTile({
 Widget build(BuildContext context) {
   const Color primary = Color(0xFF1D4D61);
   const Color accent = Color(0xFF1D4D61);
+return PopScope(
+  canPop: true, // IMPORTANT: allows iOS swipe back
 
-  return PopScope(
-      canPop: false, 
-       onPopInvokedWithResult: (bool didPop, void result) {
-    if (!didPop) {
-      _navigateToHome(context);
-    }
+  onPopInvokedWithResult: (didPop, result) {
+    if (!didPop) return;
+
+    Future.microtask(() {
+      if (!context.mounted) return;
+     ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Navigating to Home'),
+      duration: Duration(seconds: 2), 
+    ),
+  );
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomePage()),
+        (route) => false,
+      );
+    });
   },
+
     child: Scaffold(
       backgroundColor: Colors.white,
       body: LayoutBuilder(builder: (context, constraints) {
